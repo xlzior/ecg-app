@@ -30,27 +30,25 @@ export default class App extends React.Component {
   }
 
   listenForItems(datastoreRef) {
-    datastoreRef.on("value", (datastore) => {
-      datastore.forEach(async (element) => {
-        await this.storeAsync("@AsyncStorage:"+element.key, element.val())
-        // TODO: this thing only works for the last key value pair in the array because of some async thing
-      });
+    datastoreRef.on("value", datastore => {
+      datastore.forEach(element => {this.storeAsync(element.key, element.val())});
     });
   }
 
   async storeAsync(key, value) {
+    console.log(key, value)
     try {
-      console.log(key, value)
-      await AsyncStorage.setItem("@AsyncStorage:"+key, JSON.stringify(value));
+      await AsyncStorage.setItem(key, JSON.stringify(value));
     } catch (error) {
       console.log("Error saving data", error)
     }
   }
 
-  async fetchAsync() {
+  async fetchAsync(key) {
     console.log("fetching data...")
+    AsyncStorage.getAllKeys().then(e => console.log(e))
     try {
-      const value = await AsyncStorage.getItem("@AsyncStorage:FAQ");
+      const value = await AsyncStorage.getItem(key);
       if (value !== null) console.log(value);
     } catch (error) {
       console.log("Error retrieving data", error);
@@ -71,7 +69,7 @@ export default class App extends React.Component {
           renderSelectedIcon={() => <Feather name="map" color="blue" size={20}/>}
           onPress={() => this.setState({ selectedTab: "map" })}
         >
-          <TouchableOpacity onPress={this.fetchAsync}>
+          <TouchableOpacity onPress={()=>this.fetchAsync("University")}>
             <Text>check store</Text>
           </TouchableOpacity>
         </TabNavigator.Item>
