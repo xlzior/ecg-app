@@ -27,6 +27,7 @@ export default class App extends React.Component {
       selectedTab: "map"
     }
     this.datastoreRef = firebaseApp.database().ref();
+    this.imagesRef = firebase.storage().ref().child('images');
   }
 
   listenForItems(datastoreRef) {
@@ -50,6 +51,7 @@ export default class App extends React.Component {
     try {
       const value = await AsyncStorage.getItem(key);
       if (value !== null) console.log(value);
+      return value;
     } catch (error) {
       console.log("Error retrieving data", error);
     }
@@ -61,7 +63,7 @@ export default class App extends React.Component {
 
   render() {
     return (
-      <TabNavigator sceneStyle={styles.tabNavigator}>
+      <TabNavigator>
         <TabNavigator.Item
           selected={this.state.selectedTab === "map"}
           title="Map"
@@ -69,9 +71,7 @@ export default class App extends React.Component {
           renderSelectedIcon={() => <Feather name="map" color="blue" size={20}/>}
           onPress={() => this.setState({ selectedTab: "map" })}
         >
-          <TouchableOpacity onPress={()=>this.fetchAsync("University")}>
-            <Text>check store</Text>
-          </TouchableOpacity>
+          <MapView imagesRef={this.imagesRef}/>
         </TabNavigator.Item>
         <TabNavigator.Item
           selected={this.state.selectedTab === "university-list"}
@@ -115,8 +115,4 @@ export default class App extends React.Component {
 }
 
 const styles = StyleSheet.create({
-  tabNavigator: {
-    margin: 10,
-    marginTop: 20
-  }
 });
