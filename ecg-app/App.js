@@ -1,17 +1,19 @@
 import React from "react";
 import { StyleSheet, Text, View, TouchableOpacity, AsyncStorage } from "react-native";
-import * as firebase from "firebase";
 
+// TabNavigator
 import TabNavigator from "react-native-tab-navigator";
 import { Feather, MaterialIcons, FontAwesome, Entypo } from "@expo/vector-icons";
 
+// Components
 import MapView from "./components/Map";
 import UniversityList from "./components/UniversityList";
 import QuestionBank from "./components/QuestionBank";
 import Forms from "./components/Forms";
 import About from "./components/About";
 
-// Initialize Firebase
+// Firebase
+import * as firebase from "firebase";
 const firebaseConfig = {
   apiKey: "AIzaSyBdqilpCzlfukGGQIo4dZ7ntrrzZliTHlI",
   authDomain: "ecg-fair.firebaseapp.com",
@@ -24,7 +26,8 @@ export default class App extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      selectedTab: "map"
+      selectedTab: "map",
+      universities: []
     }
     this.datastoreRef = firebaseApp.database().ref();
     this.imagesRef = firebase.storage().ref().child('images');
@@ -37,28 +40,62 @@ export default class App extends React.Component {
   }
 
   async storeAsync(key, value) {
-    console.log(key, value)
     try {
       await AsyncStorage.setItem(key, JSON.stringify(value));
     } catch (error) {
-      console.log("Error saving data", error)
+      console.error("Error saving data", error)
     }
   }
 
   async fetchAsync(key) {
-    console.log("fetching data...")
-    AsyncStorage.getAllKeys().then(e => console.log(e))
     try {
       const value = await AsyncStorage.getItem(key);
-      if (value !== null) console.log(value);
       return value;
     } catch (error) {
-      console.log("Error retrieving data", error);
+      console.error("Error retrieving data", error);
     }
   }
 
-  componentDidMount() {
+  async componentDidMount() {
     this.listenForItems(this.datastoreRef);
+    
+    const suni = await AsyncStorage.getItem("University");
+    const uni = JSON.parse(suni);
+    const sfaculty = await AsyncStorage.getItem("Faculty");
+    const faculty = JSON.parse(sfaculty);
+
+    var universities = {};
+    // Populate universities
+    for (let entry in uni) {
+      universities[entry] = {
+        name: uni[entry].Name,
+        faculties: []
+      }
+    }
+
+    // Fill up faculties
+    for (let entry in faculty) {
+      const university = faculty[entry].University
+      universities[university].faculties.push({
+        id: entry,
+        name: faculty[entry].Name,
+        details: faculty[entry]
+      });
+    }
+
+    // Flatten it
+    var universitiesFlat = [];
+    for (let entry in universities) {
+      universitiesFlat.push({
+        id: entry,
+        name: universities[entry].name,
+        faculties: universities[entry].faculties
+      });
+    }
+
+    this.setState({
+      universities: universitiesFlat
+    });
   }
 
   render() {
@@ -80,7 +117,7 @@ export default class App extends React.Component {
           renderSelectedIcon={() => <Entypo name="shop" color="blue" size={20}/>}
           onPress={() => this.setState({ selectedTab: "university-list" })}
         >
-          <UniversityList />
+          <UniversityList universities={this.state.universities}/>
         </TabNavigator.Item>
         <TabNavigator.Item
           selected={this.state.selectedTab === "question-bank"}

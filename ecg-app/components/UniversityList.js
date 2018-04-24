@@ -2,53 +2,28 @@ import React, { Component } from "react";
 import { AsyncStorage } from "react-native";
 import { Container, Content, Text, Header, Body, Title, List, ListItem } from "native-base";
 
+import UniversityInfo from "./UniversityInfo";
+
 export default class UniversityList extends Component {
 
   constructor() {
     super();
     this.state = {
-      universities: []
+      showModal: false,
+      university: "",
+      faculty: {},
     };
   }
 
-  async componentDidMount() {
-    const self = this;
-    const suni = await AsyncStorage.getItem("University");
-    const uni = JSON.parse(suni);
-    const sfaculty = await AsyncStorage.getItem("Faculty");
-    const faculty = JSON.parse(sfaculty);
+  toggleModal(show) {
+    this.setState({ showModal: show })
+  }
 
-    var universities = {};
-    // Populate universities
-    for (let entry in uni) {
-      universities[entry] = {
-        name: uni[entry].Name,
-        faculties: []
-      }
-    }
-
-    // Fill up faculties
-    for (let entry in faculty) {
-      const university = faculty[entry].University
-      universities[university].faculties.push({
-        id: faculty,
-        name: faculty[entry].Name
-      });
-    }
-
-    // Flatten it
-    var universitiesFlat = [];
-    for (let entry in universities) {
-      universitiesFlat.push({
-        id: entry,
-        name: universities[entry].name,
-        faculties: universities[entry].faculties
-      });
-    }
-
+  openModal(faculty) {
     this.setState({
-      universities: universitiesFlat
-    });
+      showModal: true,
+      faculty
+    })
   }
 
   render() {
@@ -61,14 +36,21 @@ export default class UniversityList extends Component {
         </Header>
         <Content>
         {
-          this.state.universities.map((university) => {
+          this.props.universities.map((university) => {
             return <UniversitySection
               key={university.id}
               name={university.name}
               faculties={university.faculties}
+              openModal={(f)=>this.openModal(f)}
             />
           })
         }
+          <UniversityInfo
+            showModal={this.state.showModal}
+            toggleModal={s=>this.toggleModal(s)}
+            faculty={this.state.faculty}
+            universities={this.props.universities}
+          />
         </Content>
       </Container>
     )
@@ -87,6 +69,7 @@ class UniversitySection extends Component {
             return <Faculty
               key={faculty.id}
               name={faculty.name}
+              openModal={()=>this.props.openModal(faculty)}
             />
           })
         }
@@ -97,9 +80,11 @@ class UniversitySection extends Component {
 
 class Faculty extends Component {
   render() {
+    var {name, openModal} = this.props;
+    
     return (
-      <ListItem>
-        <Text>{this.props.name}</Text>
+      <ListItem button onPress={()=>openModal()}>
+        <Text>{name}</Text>
       </ListItem>
     )
   }
