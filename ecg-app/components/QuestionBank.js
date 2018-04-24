@@ -1,9 +1,25 @@
 import React from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet } from "react-native";
+import { Container, Content, Text, Header, Body, Title, List, ListItem} from "native-base";
 
 export default class QuestionBank extends React.Component {
   render() {
-    return <Text>Question Bank</Text>
+    return (
+      <Container>
+        <Header>
+          <Body>
+            <Title>Question Bank</Title>
+          </Body>
+        </Header>
+        <Content>
+          <List>
+            <ListItem>
+              <Text>placeholder question</Text>
+            </ListItem>
+          </List>
+        </Content>
+      </Container>
+    )
   }
 }
 

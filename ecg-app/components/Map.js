@@ -1,6 +1,6 @@
 import React from "react";
-import { StyleSheet, Text, View, Image, TouchableOpacity, Dimensions } from "react-native";
-import { Picker } from "native-base";
+import { StyleSheet, View, Image, TouchableOpacity, Dimensions } from "react-native";
+import { Container, Content, Text, Header, Body, Title, Picker, List, ListItem } from "native-base";
 
 import ImageView from "react-native-image-view";
 
@@ -62,9 +62,8 @@ export default class MapView extends React.Component {
     var image = this.state.locations.find(e => e.id == this.state.location);
     var imageIndex = this.state.locations.indexOf(image);
 
-    let imageDisplay;
     if (image.source) { // image.source.uri might not exist if the download URL has not been fetched from firebase
-      imageDisplay = (
+      var imageDisplay = (
         <View>
           <TouchableOpacity onPress={()=>this.setState({isImageOpen: true})}>
             <Image
@@ -85,16 +84,26 @@ export default class MapView extends React.Component {
 
     let pickerItems = this.state.locations.map(e => <Picker.Item key={e.id} label={e.name} value={e.id}/>)
     return (
-      <View>
-        <Picker
-          selectedValue={this.state.location}
-          iosHeader="Select location"
-          mode="dropdown"
-          onValueChange={id => this.changeLocation(id)}>
-          {pickerItems}
-        </Picker>
-        {imageDisplay}
-      </View>
+      <Container>
+        <Header>
+          <Body>
+            <Title>Map</Title>
+          </Body>
+        </Header>
+        <Content>
+          <Picker
+            selectedValue={this.state.location}
+            iosHeader="Select location"
+            mode="dropdown"
+            onValueChange={id => this.changeLocation(id)}>
+            {pickerItems}
+          </Picker>
+          {imageDisplay}
+          <List>
+
+          </List>
+        </Content>
+      </Container>
     )
   }
 }
