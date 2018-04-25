@@ -7,7 +7,7 @@ import { Feather, MaterialIcons, FontAwesome, Entypo } from "@expo/vector-icons"
 
 // Components
 import MapView from "./components/Map";
-import UniversityList from "./components/UniversityList";
+import UniversityListContainer from "./components/UniversityListContainer";
 import QuestionBank from "./components/QuestionBank";
 import Forms from "./components/Forms";
 import About from "./components/About";
@@ -108,7 +108,10 @@ export default class App extends React.Component {
           renderSelectedIcon={() => <Feather name="map" color="blue" size={20}/>}
           onPress={() => this.setState({ selectedTab: "map" })}
         >
-          <MapView imagesRef={this.imagesRef}/>
+          <MapView
+            imagesRef={this.imagesRef}
+            universities={this.state.universities}
+          />
         </TabNavigator.Item>
         <TabNavigator.Item
           selected={this.state.selectedTab === "university-list"}
@@ -117,7 +120,7 @@ export default class App extends React.Component {
           renderSelectedIcon={() => <Entypo name="shop" color="blue" size={20}/>}
           onPress={() => this.setState({ selectedTab: "university-list" })}
         >
-          <UniversityList universities={this.state.universities}/>
+          <UniversityListContainer universities={this.state.universities}/>
         </TabNavigator.Item>
         <TabNavigator.Item
           selected={this.state.selectedTab === "question-bank"}

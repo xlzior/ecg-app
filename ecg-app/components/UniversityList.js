@@ -1,6 +1,6 @@
 import React, { Component } from "react";
-import { AsyncStorage } from "react-native";
-import { Container, Content, Text, Header, Body, Title, List, ListItem } from "native-base";
+import { AsyncStorage, View } from "react-native";
+import { Text, Title, List, ListItem } from "native-base";
 
 import UniversityInfo from "./UniversityInfo";
 
@@ -28,13 +28,7 @@ export default class UniversityList extends Component {
 
   render() {
     return (
-      <Container>
-        <Header>
-          <Body>
-            <Title>Booths</Title>
-          </Body>
-        </Header>
-        <Content>
+        <View>
         {
           this.props.universities.map((university) => {
             return <UniversitySection
@@ -51,8 +45,7 @@ export default class UniversityList extends Component {
             faculty={this.state.faculty}
             universities={this.props.universities}
           />
-        </Content>
-      </Container>
+        </View>
     )
   }
 }

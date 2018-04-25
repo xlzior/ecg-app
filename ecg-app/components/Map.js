@@ -1,8 +1,9 @@
 import React from "react";
-import { StyleSheet, View, Image, TouchableOpacity, Dimensions } from "react-native";
+import { StyleSheet, View, Image, TouchableOpacity, Dimensions, AsyncStorage } from "react-native";
 import { Container, Content, Text, Header, Body, Title, Picker, List, ListItem } from "native-base";
 
 import ImageView from "react-native-image-view";
+import UniversityList from "./UniversityList";
 
 const {width} = Dimensions.get("window");
 
@@ -35,7 +36,7 @@ export default class MapView extends React.Component {
   getURL(e) {
     // get image download URLs from firebase and store inside this.images
     var imageRef = this.props.imagesRef.child(e.fileName);
-    var locations = this.state.locations;
+    var locations = this.state.locations.slice();
     var index = locations.indexOf(e);
 
     imageRef.getDownloadURL()
@@ -46,22 +47,48 @@ export default class MapView extends React.Component {
       this.setState({locations})
     })
     .catch(e => console.error(e));
-
   }
 
   componentDidMount() {
     // get URLs for all the locations
     this.state.locations.forEach(e => this.getURL(e));
+
+    AsyncStorage.getItem("Map")
+    .then(data => JSON.parse(data))
+    .then(booths => {
+      var locations = this.state.locations.slice();
+      for (let name in booths) {
+        // for each location in the map
+        var location = this.state.locations.find(l => l.name == name);
+        var index = locations.indexOf(location);
+
+        // compile a list of boothIds in the location
+        var boothIds = []
+        for (let booth in booths[name]) {
+          boothIds.push(booths[name][booth].Link)
+        }
+
+        // add the info to the existing object called locations
+        locations[index].boothIds = boothIds;
+      }
+      this.setState({locations});
+    })
+    .catch(e => console.error(e));
   }
-  
+
+  static getDerivedStateFromProps(props) {
+    return { universities: props.universities }
+  }
+
   changeLocation(location) {
     this.setState({location})
   }
 
   render() {
+    // generate map
     var image = this.state.locations.find(e => e.id == this.state.location);
     var imageIndex = this.state.locations.indexOf(image);
-
+    
     if (image.source) { // image.source.uri might not exist if the download URL has not been fetched from firebase
       var imageDisplay = (
         <View>
@@ -82,7 +109,28 @@ export default class MapView extends React.Component {
       )
     }
 
+    // generate items for the dropdown menu
     let pickerItems = this.state.locations.map(e => <Picker.Item key={e.id} label={e.name} value={e.id}/>)
+
+    // generate university list by filtering for unis in the selected location
+    var filteredUnis = [];
+    if (this.state.universities.length > 0) {
+      var {universities} = this.state;
+      universities.forEach(uni => {
+        var filteredFacs = uni.faculties.filter(fac => {
+          var boothIds = this.state.locations.find(l => l.id == this.state.location).boothIds;
+          if (boothIds) return boothIds.indexOf(fac.id) != -1;
+        });
+        if (filteredFacs.length > 0) {
+          filteredUnis.push({
+            id: uni.id,
+            name: uni.name,
+            faculties: filteredFacs
+          })
+        }
+      })
+    }
+
     return (
       <Container>
         <Header>
@@ -99,9 +147,7 @@ export default class MapView extends React.Component {
             {pickerItems}
           </Picker>
           {imageDisplay}
-          <List>
-
-          </List>
+          <UniversityList universities={filteredUnis}/>
         </Content>
       </Container>
     )
