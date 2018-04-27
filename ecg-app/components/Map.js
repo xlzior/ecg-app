@@ -1,6 +1,6 @@
 import React from "react";
 import { StyleSheet, View, Image, TouchableOpacity, Dimensions, AsyncStorage } from "react-native";
-import { Container, Content, Text, Header, Body, Title, Picker, List, ListItem } from "native-base";
+import { Container, Content, Text, Header, Body, Title, Picker, List, ListItem, Icon } from "native-base";
 
 import ImageView from "react-native-image-view";
 import UniversityList from "./UniversityList";
@@ -41,7 +41,10 @@ export default class MapView extends React.Component {
 
     imageRef.getDownloadURL()
     .then(url => {
-      locations[index].source = {uri: url};
+      locations[index].source = {
+        uri: url,
+        cache: "force-cache"
+      };
       locations[index].width = 1920;
       locations[index].height = 1080;
       this.setState({locations})
@@ -94,7 +97,10 @@ export default class MapView extends React.Component {
         <View>
           <TouchableOpacity onPress={()=>this.setState({isImageOpen: true})}>
             <Image
-              source={{uri: image.source.uri}}
+              source={{
+                uri: image.source.uri,
+                cache: "force-cache"
+              }}
               style={{height: 200, width}}
             />
           </TouchableOpacity>
@@ -143,6 +149,7 @@ export default class MapView extends React.Component {
             selectedValue={this.state.location}
             iosHeader="Select location"
             mode="dropdown"
+            iosIcon={<Icon name="ios-arrow-down-outline" />}
             onValueChange={id => this.changeLocation(id)}>
             {pickerItems}
           </Picker>
