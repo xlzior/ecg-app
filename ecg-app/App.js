@@ -36,6 +36,7 @@ export default class App extends React.Component {
   listenForItems(datastoreRef) {
     datastoreRef.on("value", datastore => {
       datastore.forEach(element => {this.storeAsync(element.key, element.val())});
+      AsyncStorage.setItem("last_update", JSON.stringify(new Date().toISOString()))
     });
   }
 
@@ -58,7 +59,7 @@ export default class App extends React.Component {
 
   async componentDidMount() {
     this.listenForItems(this.datastoreRef);
-    
+
     const suni = await AsyncStorage.getItem("University");
     const uni = JSON.parse(suni);
     const sfaculty = await AsyncStorage.getItem("Faculty");

@@ -2,13 +2,13 @@ import React, { Component } from "react";
 import { AsyncStorage } from "react-native";
 import { Header, Left, Body, Right, Title, Icon } from "native-base"
 import { Container, Content, Button, Text, Card, CardItem } from "native-base"
+import Moment from "react-moment"
 
 console.disableYellowBox = true;
 
 const titles = {
   main: "About",
-  faq: "FAQ",
-  debug: "Debug"
+  faq: "FAQ"
 };
 
 export default class About extends Component {
@@ -16,7 +16,7 @@ export default class About extends Component {
   constructor() {
     super();
     this.state = {
-      view: "main", // faq, main, debug
+      view: "main", // faq, main
       title: "About"
     };
 
@@ -35,10 +35,6 @@ export default class About extends Component {
               />
     else if (this.state.view === "faq")
       return <FAQ
-                setView={this.setView}
-              />
-    else if (this.state.view === "debug")
-      return <Debug
                 setView={this.setView}
               />
   }
@@ -69,15 +65,28 @@ export default class About extends Component {
 }
 
 class Main extends Component {
+
+  constructor() {
+    super();
+    this.state = {
+      last_update: -1
+    };
+  }
+
+  async componentDidMount() {
+    const last_update = await AsyncStorage.getItem("last_update");
+    this.setState({ last_update: JSON.parse(last_update) });
+  }
+
   render() {
     return (
       <Content>
         <Button block info onPress={()=>this.props.setView("faq")}>
           <Text>FAQ</Text>
         </Button>
-        <Button block info onPress={()=>this.props.setView("debug")}>
-          <Text>Debug</Text>
-        </Button>
+        <Text>
+          Last Updated: <Moment element={Text} fromNow>{this.state.last_update}</Moment>
+        </Text>
       </Content>
     )
   }
@@ -136,26 +145,6 @@ class FAQrow extends Component {
           </Body>
         </CardItem>
       </Card>
-    )
-  }
-}
-
-class Debug extends Component {
-  constructor() {
-    super();
-    this.state = {
-      lastupdt: "Long Long Ago"
-    };
-  }
-
-  render() {
-    return (
-      <Content>
-        <Text>Last Updated: {this.state.lastupdt}</Text>
-        <Button block info onPress={()=>(function(){})()}>
-          <Text>Pull Fresh Data</Text>
-        </Button>
-      </Content>
     )
   }
 }
