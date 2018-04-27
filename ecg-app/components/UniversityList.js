@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import { AsyncStorage, View } from "react-native";
 import { Text, Title, List, ListItem } from "native-base";
 
-import UniversityInfo from "./UniversityInfo";
+import BoothInfo from "./BoothInfo";
 
 export default class UniversityList extends Component {
 
@@ -11,7 +11,8 @@ export default class UniversityList extends Component {
     this.state = {
       showModal: false,
       university: "",
-      faculty: {},
+      info: {},
+      type: ""
     };
   }
 
@@ -19,10 +20,11 @@ export default class UniversityList extends Component {
     this.setState({ showModal: show })
   }
 
-  openModal(faculty) {
+  openModal(type, info) {
     this.setState({
       showModal: true,
-      faculty
+      type,
+      info
     })
   }
 
@@ -33,17 +35,16 @@ export default class UniversityList extends Component {
           this.props.universities.map((university) => {
             return <UniversitySection
               key={university.id}
-              name={university.name}
-              faculties={university.faculties}
-              openModal={(f)=>this.openModal(f)}
+              university={university}
+              openModal={(t, i)=>this.openModal(t, i)}
             />
           })
         }
-          <UniversityInfo
+          <BoothInfo
             showModal={this.state.showModal}
             toggleModal={s=>this.toggleModal(s)}
-            faculty={this.state.faculty}
-            universities={this.props.universities}
+            type={this.state.type}
+            info={this.state.info}
           />
         </View>
     )
@@ -52,17 +53,21 @@ export default class UniversityList extends Component {
 
 class UniversitySection extends Component {
   render() {
+    var {id, name, faculties} = this.props.university;
     return (
       <List>
-        <ListItem itemDivider>
-          <Text>{this.props.name}</Text>
+        <ListItem
+          itemDivider button
+          onPress={()=>this.props.openModal("university", this.props.university)}
+        >
+          <Text>{name}</Text>
         </ListItem>
         {
-          this.props.faculties.map((faculty) => {
+          faculties.map((faculty) => {
             return <Faculty
               key={faculty.id}
               name={faculty.name}
-              openModal={()=>this.props.openModal(faculty)}
+              openModal={()=>this.props.openModal("faculty", faculty)}
             />
           })
         }

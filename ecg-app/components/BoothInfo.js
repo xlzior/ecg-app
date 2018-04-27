@@ -3,11 +3,14 @@ import { StyleSheet, View, ScrollView, Modal, TouchableOpacity, Image, AsyncStor
 import { Button, Icon, Text, List, ListItem } from "native-base";
 import Hyperlink from "react-native-hyperlink";
 
-export default class UniversityInfo extends Component {
+import UniversityList from "./UniversityList";
+
+export default class BoothInfo extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      universities: {}
+      universities: {},
+      faculties: {}
     }
   }
   
@@ -17,30 +20,51 @@ export default class UniversityInfo extends Component {
     .then((uni)=>{
       this.setState({universities: uni});
     });
+
+    AsyncStorage.getItem("Faculty")
+    .then(data => JSON.parse(data))
+    .then((fac)=>{
+      this.setState({faculties: fac});
+    });
   }
 
   render() {
-    if (Object.keys(this.props.faculty) == 0) return null;
-    var {Courses, Desc, IGP, Name, Picture, University, Website} = this.props.faculty.details;
-
+    var {showModal, toggleModal, type, info} = this.props;
+    if (type == "faculty") {
+      var {Courses, Desc, IGP, Name, Picture, University, Website} = info.details;
+    } else if (type == "university") {
+      var {Desc, Faculties, Name, Picture, ShortName, Website} = this.state.universities[info.id];
+    }
+    
+    // close button for faculties and unis
     var closeButton = (
       <Button
         small bordered dark
-        onPress={()=>this.props.toggleModal(false)}
+        onPress={()=>toggleModal(false)}
         style={styles.closeButton}
       >
         <Icon name="close"/>
       </Button>
     )
 
-    University = this.state.universities[University].ShortName;
-    var title = (
-      <View>
-        <Text style={styles.header}>{University}</Text>
-        <Text style={[styles.header, styles.marginBottom]}>{Name}</Text>
-      </View>
-    )
+    var title = <Text>Title</Text>
+    // title for faculties
+    if (type == "faculty") {
+      University = this.state.universities[University].ShortName;
+      var title = (
+        <View>
+          <Text style={styles.header}>{University}</Text>
+          <Text style={[styles.header, styles.marginBottom]}>{Name}</Text>
+        </View>
+      )
+    }
 
+    // title for unis
+    else if (type == "university") {
+      var title = <Text style={[styles.header, styles.marginBottom]}>{Name} ({ShortName})</Text>;
+    }
+
+    // picture for faculties and unis
     var image = Picture ? (
       <Image
         style={[styles.image, styles.marginBottom]}
@@ -48,14 +72,17 @@ export default class UniversityInfo extends Component {
       />
     ) : null;
 
+    // description for faculties and unis
     var description = Desc ? (
       <Text style={styles.marginBottom}>{Desc}</Text>
     ) : null;
 
+    // igp for faculties
     var igp = IGP ? (
       <Text style={styles.marginBottom}>IGP: {IGP}</Text>
     ): null;
 
+    // website for faculties and unis
     var website = Website ? (
       <Hyperlink
         linkDefault={true}
@@ -66,13 +93,30 @@ export default class UniversityInfo extends Component {
       </Hyperlink>
     ) : null;
 
-    Courses = Courses.split(", ");
-    var courses = Courses ? (
+    // faculties for unis
+    if (type == "university") {
+      var facultiesList = [];
+      for (var id in Faculties) {
+        facultiesList.push(this.state.faculties[Faculties[id]]);
+      }
+      var faculties = (
+        <View>
+          <Text>Faculties</Text>
+          {facultiesList.map(fac => {
+            console.log(fac);
+            return <ListItem><Text>{fac.Name}</Text></ListItem>
+          })}
+        </View>
+      )
+    }
+
+    // courses for faculties
+    var courses = Courses? (
       <View>
         <Text>Courses</Text>
         <List>
         {
-          Courses.map((c, i) => (
+          Courses.split(", ").map((c, i) => (
             <ListItem key={i}>
               <Text>{c}</Text>
             </ListItem>
@@ -85,7 +129,7 @@ export default class UniversityInfo extends Component {
       <Modal
         animationType="slide"
         transparent={false}
-        visible={this.props.showModal}
+        visible={showModal}
       >
         <ScrollView style={styles.container}>
           {closeButton}
@@ -95,6 +139,7 @@ export default class UniversityInfo extends Component {
           {igp}
           {website}
           {courses}
+          <List>{faculties}</List>
         </ScrollView>
       </Modal>
     )
@@ -103,8 +148,7 @@ export default class UniversityInfo extends Component {
 
 const styles = StyleSheet.create({
   container: {
-    margin: 10,
-    marginTop: 20,
+    margin: 15,
   },
   header: {
     fontSize: 20,
