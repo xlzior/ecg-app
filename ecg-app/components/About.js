@@ -36,6 +36,7 @@ export default class About extends Component {
     else if (this.state.view === "faq")
       return <FAQ
                 setView={this.setView}
+                {...this.props}
               />
   }
 
@@ -73,9 +74,8 @@ class Main extends Component {
     };
   }
 
-  async componentDidMount() {
-    const last_update = await AsyncStorage.getItem("last_update");
-    this.setState({ last_update: JSON.parse(last_update) });
+  static getDerivedStateFromProps(props) {
+    return { last_update: props.last_update };
   }
 
   render() {
@@ -101,8 +101,7 @@ class FAQ extends Component {
   }
 
   async componentDidMount() {
-    const sFAQs = await AsyncStorage.getItem("FAQ");
-    const FAQs = JSON.parse(sFAQs);
+    const FAQs = this.props.FBfaqs;
     var questions = [];
     for (let entry in FAQs) {
       questions.push({

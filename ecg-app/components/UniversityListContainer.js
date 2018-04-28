@@ -1,5 +1,4 @@
 import React, { Component } from "react";
-import { AsyncStorage } from "react-native";
 import { Container, Content, Text, Header, Body, Title, Form, Item, Input } from "native-base";
 
 import UniversityList from "./UniversityList";
@@ -14,7 +13,8 @@ export default class UniversityListContainer extends Component {
   }
 
   static getDerivedStateFromProps(props) {
-    return { universities: props.universities.slice() }
+    if (props.universities) return { universities: props.universities.slice() }
+    return {}
   }
 
   handleKeypress(searchTerm) {
@@ -70,10 +70,15 @@ export default class UniversityListContainer extends Component {
                 placeholder="Search"
                 onChangeText={t => this.handleKeypress(t)}
                 value={this.state.searchTerm}
+                returnKeyType="search"
               />
             </Item>
           </Form>
-          <UniversityList universities={this.state.universities}/>
+          <UniversityList
+            universities={this.state.universities}
+            FBuniversity={this.props.FBuniversity}
+            FBfaculty={this.props.FBfaculty}
+          />
         </Content>
       </Container>
     )

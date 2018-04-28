@@ -1,5 +1,6 @@
-import React from "react";
+import React, { Component } from "react";
 import { StyleSheet, Text, View, TouchableOpacity, AsyncStorage } from "react-native";
+import { Font } from "expo";
 
 // TabNavigator
 import TabNavigator from "react-native-tab-navigator";
@@ -22,25 +23,50 @@ const firebaseConfig = {
 };
 const firebaseApp = firebase.initializeApp(firebaseConfig);
 
-export default class App extends React.Component {
+export default class App extends Component {
   constructor(props) {
     super(props);
     this.state = {
       selectedTab: "map",
-      universities: []
+      universities: [],
+      asyncStorage: {},
+      fontLoaded: false,
+      last_update: ""
     }
     this.datastoreRef = firebaseApp.database().ref();
     this.imagesRef = firebase.storage().ref().child('images');
   }
 
   listenForItems(datastoreRef) {
-    datastoreRef.on("value", datastore => {
-      datastore.forEach(element => {this.storeAsync(element.key, element.val())});
-      AsyncStorage.setItem("last_update", JSON.stringify(new Date().toISOString()))
+    datastoreRef.once("value", datastore => {
+      datastore.forEach(element => {
+        this.storeAsync(element.key, element.val())
+      });
+
+      var last_update = JSON.stringify(new Date().toISOString());
+      this.setState({last_update})
+      AsyncStorage.setItem("last_update", last_update);
     });
   }
 
   async storeAsync(key, value) {
+    let faculty = this.state.asyncStorage["Faculty"];
+    let uni = this.state.asyncStorage["University"];
+    let universities;
+
+    if (key == "University" && faculty) {
+      universities = this.flattenUnis(value, faculty)
+    } else if (key == "Faculty" && uni) {
+      universities = this.flattenUnis(uni, value);
+    }
+
+    let asyncStorage = this.state.asyncStorage;
+    asyncStorage[key] = value;
+    this.setState({
+      asyncStorage,
+      universities
+    });
+
     try {
       await AsyncStorage.setItem(key, JSON.stringify(value));
     } catch (error) {
@@ -57,14 +83,7 @@ export default class App extends React.Component {
     }
   }
 
-  async componentDidMount() {
-    this.listenForItems(this.datastoreRef);
-
-    const suni = await AsyncStorage.getItem("University");
-    const uni = JSON.parse(suni);
-    const sfaculty = await AsyncStorage.getItem("Faculty");
-    const faculty = JSON.parse(sfaculty);
-
+  flattenUnis(uni, faculty) {
     var universities = {};
     // Populate universities
     for (let entry in uni) {
@@ -93,13 +112,23 @@ export default class App extends React.Component {
         faculties: universities[entry].faculties
       });
     }
+    return universitiesFlat;
+  }
 
-    this.setState({
-      universities: universitiesFlat
+  async componentDidMount() {
+    Font.loadAsync({
+      'Roboto_medium': require('./components/assets/Roboto_medium.ttf'),
+    })
+    .then(() => {
+      this.setState({ fontLoaded: true });
+      // console.log("font loaded")
     });
+
+    this.listenForItems(this.datastoreRef);
   }
 
   render() {
+    if (!this.state.fontLoaded) return <View><Text>Loading...</Text></View>
     return (
       <TabNavigator>
         <TabNavigator.Item
@@ -112,6 +141,9 @@ export default class App extends React.Component {
           <MapView
             imagesRef={this.imagesRef}
             universities={this.state.universities}
+            FBmap={this.state.asyncStorage["Map"]}
+            FBuniversity={this.state.asyncStorage["University"]}
+            FBfaculty={this.state.asyncStorage["Faculty"]}
           />
         </TabNavigator.Item>
         <TabNavigator.Item
@@ -121,7 +153,11 @@ export default class App extends React.Component {
           renderSelectedIcon={() => <Entypo name="shop" color="blue" size={20}/>}
           onPress={() => this.setState({ selectedTab: "university-list" })}
         >
-          <UniversityListContainer universities={this.state.universities}/>
+          <UniversityListContainer
+            universities={this.state.universities}
+            FBuniversity={this.state.asyncStorage["University"]}
+            FBfaculty={this.state.asyncStorage["Faculty"]}
+          />
         </TabNavigator.Item>
         <TabNavigator.Item
           selected={this.state.selectedTab === "question-bank"}
@@ -130,7 +166,9 @@ export default class App extends React.Component {
           renderSelectedIcon={() => <FontAwesome name="question-circle" color="blue" size={20}/>}
           onPress={() => this.setState({ selectedTab: "question-bank" })}
         >
-          <QuestionBank />
+          <QuestionBank
+            FBquestionBank={this.state.asyncStorage["QuestionBank"]}
+          />
         </TabNavigator.Item>
         <TabNavigator.Item
           selected={this.state.selectedTab === "forms"}
@@ -148,7 +186,10 @@ export default class App extends React.Component {
           renderSelectedIcon={() => <Feather name="info" color="blue" size={20}/>}
           onPress={() => this.setState({ selectedTab: "about" })}
         >
-          <About />
+          <About
+            FBfaqs={this.state.asyncStorage["FAQ"]}
+            last_update={this.state.last_update}
+          />
         </TabNavigator.Item>
       </TabNavigator>
     );

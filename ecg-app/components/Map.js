@@ -1,5 +1,5 @@
-import React from "react";
-import { StyleSheet, View, Image, TouchableOpacity, Dimensions, AsyncStorage } from "react-native";
+import React, { Component } from "react";
+import { StyleSheet, View, Image, TouchableOpacity, Dimensions } from "react-native";
 import { Container, Content, Text, Header, Body, Title, Picker, List, ListItem, Icon } from "native-base";
 
 import ImageView from "react-native-image-view";
@@ -7,7 +7,7 @@ import UniversityList from "./UniversityList";
 
 const {width} = Dimensions.get("window");
 
-export default class MapView extends React.Component {
+export default class MapView extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -29,7 +29,8 @@ export default class MapView extends React.Component {
         },
       ],
       location: "hall",
-      isImageOpen: false
+      isImageOpen: false,
+      universities: []
     }
   }
 
@@ -55,32 +56,28 @@ export default class MapView extends React.Component {
   componentDidMount() {
     // get URLs for all the locations
     this.state.locations.forEach(e => this.getURL(e));
-
-    AsyncStorage.getItem("Map")
-    .then(data => JSON.parse(data))
-    .then(booths => {
-      var locations = this.state.locations.slice();
-      for (let name in booths) {
-        // for each location in the map
-        var location = this.state.locations.find(l => l.name == name);
-        var index = locations.indexOf(location);
-
-        // compile a list of boothIds in the location
-        var boothIds = []
-        for (let booth in booths[name]) {
-          boothIds.push(booths[name][booth].Link)
-        }
-
-        // add the info to the existing object called locations
-        locations[index].boothIds = boothIds;
-      }
-      this.setState({locations});
-    })
-    .catch(e => console.error(e));
   }
 
-  static getDerivedStateFromProps(props) {
-    return { universities: props.universities }
+  static getDerivedStateFromProps(props, state) {
+    var locations = state.locations.slice();
+    for (let name in props.FBmap) {
+      // for each location in the map
+      var location = state.locations.find(l => l.name == name);
+      var index = locations.indexOf(location);
+
+      // compile a list of boothIds in the location
+      var boothIds = []
+      for (let booth in props.FBmap[name]) {
+        boothIds.push(props.FBmap[name][booth].Link)
+      }
+
+      // add the info to the existing object called locations
+      locations[index].boothIds = boothIds;
+    }
+    return {
+      universities: props.universities,
+      locations
+    }
   }
 
   changeLocation(location) {
@@ -88,9 +85,10 @@ export default class MapView extends React.Component {
   }
 
   render() {
+    var {universities, locations, location, isImageOpen} = this.state;
     // generate map
-    var image = this.state.locations.find(e => e.id == this.state.location);
-    var imageIndex = this.state.locations.indexOf(image);
+    var image = locations.find(e => e.id == location);
+    var imageIndex = locations.indexOf(image);
     
     if (image.source) { // image.source.uri might not exist if the download URL has not been fetched from firebase
       var imageDisplay = (
@@ -105,9 +103,9 @@ export default class MapView extends React.Component {
             />
           </TouchableOpacity>
           <ImageView
-            images={this.state.locations}
+            images={locations}
             imageIndex={imageIndex}
-            isVisible={this.state.isImageOpen}
+            isVisible={isImageOpen}
             onClose={()=>this.setState({isImageOpen: false})}
             renderFooter={()=><Text>{image.name}</Text>}
           />
@@ -116,15 +114,15 @@ export default class MapView extends React.Component {
     }
 
     // generate items for the dropdown menu
-    let pickerItems = this.state.locations.map(e => <Picker.Item key={e.id} label={e.name} value={e.id}/>)
+    let pickerItems = locations.map(e => <Picker.Item key={e.id} label={e.name} value={e.id}/>)
 
     // generate university list by filtering for unis in the selected location
     var filteredUnis = [];
-    if (this.state.universities.length > 0) {
+    if (universities && universities.length > 0) {
       var {universities} = this.state;
       universities.forEach(uni => {
         var filteredFacs = uni.faculties.filter(fac => {
-          var boothIds = this.state.locations.find(l => l.id == this.state.location).boothIds;
+          var boothIds = locations.find(l => l.id == location).boothIds;
           if (boothIds) return boothIds.indexOf(fac.id) != -1;
         });
         if (filteredFacs.length > 0) {
@@ -146,7 +144,7 @@ export default class MapView extends React.Component {
         </Header>
         <Content>
           <Picker
-            selectedValue={this.state.location}
+            selectedValue={location}
             iosHeader="Select location"
             mode="dropdown"
             iosIcon={<Icon name="ios-arrow-down-outline" />}
@@ -154,7 +152,11 @@ export default class MapView extends React.Component {
             {pickerItems}
           </Picker>
           {imageDisplay}
-          <UniversityList universities={filteredUnis}/>
+          <UniversityList
+            universities={filteredUnis}
+            FBuniversity={this.props.FBuniversity}
+            FBfaculty={this.props.FBfaculty}
+          />
         </Content>
       </Container>
     )

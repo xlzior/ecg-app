@@ -13,20 +13,18 @@ export default class QuestionBank extends Component {
   }
 
   componentDidMount() {
-    AsyncStorage.getItem("QuestionBank")
-    .then(data => JSON.parse(data))
-    .then((qns)=>{
-      this.setState({questionBank: qns});
-    });
-    
     AsyncStorage.getAllKeys()
     .then(keys => {
+      // make sure AsyncStorage contains the key "QuestionBank/Questions"
       if (keys.indexOf("QuestionBank/Questions") == -1) {
         AsyncStorage.setItem("QuestionBank/Questions", "")
       }
     })
     .then(()=>this.addNewQuestion());
+  }
 
+  static getDerivedStateFromProps(props) {
+    return { questionBank: props.FBquestionBank };
   }
 
   handleKeypress(inputValue) {

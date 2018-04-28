@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { StyleSheet, View, ScrollView, Modal, TouchableOpacity, Image, AsyncStorage } from "react-native";
+import { StyleSheet, View, ScrollView, Modal, TouchableOpacity, Image } from "react-native";
 import { Button, Icon, Text, List, ListItem } from "native-base";
 import Hyperlink from "react-native-hyperlink";
 
@@ -13,19 +13,12 @@ export default class BoothInfo extends Component {
       faculties: {}
     }
   }
-  
-  componentDidMount() {
-    AsyncStorage.getItem("University")
-    .then(data => JSON.parse(data))
-    .then((uni)=>{
-      this.setState({universities: uni});
-    });
 
-    AsyncStorage.getItem("Faculty")
-    .then(data => JSON.parse(data))
-    .then((fac)=>{
-      this.setState({faculties: fac});
-    });
+  static getDerivedStateFromProps(props) {
+    return {
+      universities: props.FBuniversity,
+      faculties: props.FBfaculty
+    }
   }
 
   render() {
@@ -103,7 +96,6 @@ export default class BoothInfo extends Component {
         <View>
           <Text>Faculties</Text>
           {facultiesList.map(fac => {
-            console.log(fac);
             return <ListItem><Text>{fac.Name}</Text></ListItem>
           })}
         </View>

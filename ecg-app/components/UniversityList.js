@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { AsyncStorage, View } from "react-native";
+import { View } from "react-native";
 import { Text, Title, List, ListItem } from "native-base";
 
 import BoothInfo from "./BoothInfo";
@@ -45,6 +45,7 @@ export default class UniversityList extends Component {
             toggleModal={s=>this.toggleModal(s)}
             type={this.state.type}
             info={this.state.info}
+            {...this.props}
           />
         </View>
     )
