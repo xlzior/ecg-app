@@ -32,7 +32,7 @@ export default class BoothInfo extends Component {
     // close button for faculties and unis
     var closeButton = (
       <Button
-        small bordered dark
+        small transparent dark
         onPress={()=>toggleModal(false)}
         style={styles.closeButton}
       >
@@ -67,7 +67,7 @@ export default class BoothInfo extends Component {
 
     // description for faculties and unis
     var description = Desc ? (
-      <Text style={styles.marginBottom}>{Desc}</Text>
+      <Text style={[styles.marginBottom, styles.desc]}>{Desc}</Text>
     ) : null;
 
     // igp for faculties
@@ -155,5 +155,8 @@ const styles = StyleSheet.create({
   },
   marginBottom: {
     marginBottom: 20
+  },
+  desc: {
+    textAlign: "justify"
   }
 });

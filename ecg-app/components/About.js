@@ -44,16 +44,16 @@ export default class About extends Component {
     return (
       <Container>
         <Header>
+        {this.state.view !== "main" &&
           <Left>
             <Button transparent>
-              {this.state.view !== "main" &&
                 <Icon
                   name="arrow-back"
                   onPress={()=>this.setView("main")}
                 />
-              }
             </Button>
           </Left>
+          }
           <Body>
             <Title>{this.state.title}</Title>
           </Body>

@@ -71,6 +71,7 @@ export default class UniversityListContainer extends Component {
                 onChangeText={t => this.handleKeypress(t)}
                 value={this.state.searchTerm}
                 returnKeyType="search"
+                clearButtonMode="always"
               />
             </Item>
           </Form>

@@ -15,17 +15,17 @@ export default class MapView extends Component {
         {
           id: "hall",
           name: "Hall",
-          fileName: "hall.jpg"
+          fileName: "hall.png"
         },
         {
           id: "dl2",
           name: "Block D Level 2",
-          fileName: "dl2.jpg"
+          fileName: "dl2.png"
         },
         {
           id: "dl3",
           name: "Block D Level 3",
-          fileName: "dl3.jpg"
+          fileName: "dl3.png"
         },
       ],
       location: "hall",
