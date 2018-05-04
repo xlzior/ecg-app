@@ -32,6 +32,7 @@ export default class About extends Component {
     if (this.state.view === "main")
       return <Main
                 setView={this.setView}
+                last_update={this.props.last_update}
               />
     else if (this.state.view === "faq")
       return <FAQ
@@ -44,16 +45,16 @@ export default class About extends Component {
     return (
       <Container>
         <Header>
-        {this.state.view !== "main" &&
           <Left>
+          {this.state.view !== "main" &&
             <Button transparent>
                 <Icon
                   name="arrow-back"
                   onPress={()=>this.setView("main")}
                 />
             </Button>
+            }
           </Left>
-          }
           <Body>
             <Title>{this.state.title}</Title>
           </Body>
@@ -70,12 +71,15 @@ class Main extends Component {
   constructor() {
     super();
     this.state = {
-      last_update: -1
+      last_update: ""
     };
   }
 
   static getDerivedStateFromProps(props) {
-    return { last_update: props.last_update };
+    var last_update = props.last_update;
+    if (last_update)
+        last_update = JSON.parse(last_update)
+    return { last_update: last_update };
   }
 
   render() {
