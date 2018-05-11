@@ -10,45 +10,66 @@ export default class BoothInfo extends Component {
     super(props);
     this.state = {
       universities: {},
-      faculties: {}
+      faculties: {},
+      id: ""
     }
   }
 
   static getDerivedStateFromProps(props) {
     return {
       universities: props.FBuniversity,
-      faculties: props.FBfaculty
+      faculties: props.FBfaculty,
+      id: props.id
     }
   }
 
+  changeView(id) {
+    this.setState({id});
+  }
+
   render() {
-    var {showModal, toggleModal, type, info} = this.props;
-    if (type == "faculty") {
+    var {isModalShown, closeModal} = this.props;
+    var {id} = this.state;
+    if (id.indexOf("F") != -1) {
       var display = (
         <FacultyInfo
-          data={info.details}
           universities={this.state.universities}
-          type={type}
-          toggleModal={b=>toggleModal(b)}
+          faculties={this.state.faculties}
+          id={id}
+          closeModal={()=>closeModal()}
+          changeView={id=>this.changeView(id)}
         />
       )
-    } else if (type == "university") {
+    } else if (id.indexOf("U") != -1) {
       var display = (
         <UniversityInfo
-          data={this.state.universities[info.id]}
+          universities={this.state.universities}
           faculties={this.state.faculties}
-          type={type}
-          toggleModal={b=>toggleModal(b)}
+          id={id}
+          closeModal={()=>closeModal()}
+          changeView={id=>this.changeView(id)}
         />
       )
     }
+
+    var closeButton = (
+      <Button
+        small transparent dark
+        onPress={()=>closeModal()}
+        style={styles.closeButton}
+      >
+        <Icon name="close"/>
+      </Button>
+    )
     
     return (
       <Modal
         animationType="slide"
         transparent={false}
-        visible={showModal}
+        visible={isModalShown}
+        onRequestClose={()=>closeModal()}
       >
+        {closeButton}
         {display}
       </Modal>
     )
@@ -57,24 +78,14 @@ export default class BoothInfo extends Component {
 
 class UniversityInfo extends Component {
   render() {
-    var {data, faculties, type, toggleModal} = this.props;
+    var {faculties, id, universities, closeModal, changeView} = this.props;
+    var data = universities[id];
     var {Desc, Faculties, Name, Picture, ShortName, Website, IGP, Courses, Scholarships, Admissions, Prerequisites} = data;
 
-    // close button for faculties and unis
-    var closeButton = (
-      <Button
-        small transparent dark
-        onPress={()=>toggleModal(false)}
-        style={styles.closeButton}
-      >
-        <Icon name="close"/>
-      </Button>
-    )
-
-    // title for unis
+    // title
     var title = <Text style={[styles.header, styles.marginBottom]}>{Name} ({ShortName})</Text>;
 
-    // picture for faculties and unis
+    // picture
     var image = Picture ? (
       <Image
         style={[styles.image, styles.marginBottom]}
@@ -82,12 +93,7 @@ class UniversityInfo extends Component {
       />
     ) : null;
 
-    // description for faculties and unis
-    var description = Desc ? (
-      <Text style={[styles.marginBottom, styles.desc]}>{Desc}</Text>
-    ) : null;
-
-    // website for faculties and unis
+    // website
     var website = Website ? (
       <Hyperlink
         linkDefault={true}
@@ -98,52 +104,52 @@ class UniversityInfo extends Component {
       </Hyperlink>
     ) : null;
 
-    // faculties for unis
-    if (type == "university") {
-      var facultiesList = [];
-      for (var id in Faculties) {
-        facultiesList.push(faculties[Faculties[id]]);
-      }
-      var faculties = (
-        <View>
-          <Text>Faculties</Text>
-          {facultiesList.map(fac => {
-            return <ListItem><Text>{fac.Name}</Text></ListItem>
-          })}
-        </View>
+    // links
+    var linksDisplay = []
+    var links = {
+      "IGP": IGP,
+      "Courses": Courses,
+      "Scholarships": Scholarships,
+      "Admissions Requirements": Admissions,
+      "'A'-Level Subject Pre-requisites": Prerequisites
+    }
+
+    for (let key in links) {
+      if (links[key]) linksDisplay.push(
+        <Hyperlink
+          linkDefault={true}
+          linkStyle={styles.link}
+          style={styles.marginBottom}
+          linkText={ url => key }
+        >
+          <Text>{links[key]}</Text>
+        </Hyperlink>
       )
     }
 
-    // links for unis
-    if (type == "university") {
-      var linksDisplay = []
-      var links = {
-        "IGP": IGP,
-        "Courses": Courses,
-        "Scholarships": Scholarships,
-        "Admissions Requirements": Admissions,
-        "'A'-Level Subject Pre-requisites": Prerequisites
-      }
-
-      for (let key in links) {
-        if (links[key]) linksDisplay.push(
-          <Hyperlink
-            linkDefault={true}
-            linkStyle={styles.link}
-            style={styles.marginBottom}
-            linkText={ url => key }
-          >
-            <Text>{links[key]}</Text>
-          </Hyperlink>
-        )
-      }
+    // faculties
+    var facultiesList = [];
+    for (let facName in Faculties) {
+      let id = Faculties[facName];
+      facultiesList.push(
+        <ListItem
+          button onPress={()=>changeView(id)}
+          key={id}>
+          <Text>{facName}</Text>
+        </ListItem>
+      );
     }
+    var faculties = (
+      <View>
+        <Text>Faculties</Text>
+        {facultiesList}
+      </View>
+    )
+
     return (
       <ScrollView style={styles.container}>
-        {closeButton}
         {title}
         {image}
-        {description}
         {linksDisplay}
         <List>{faculties}</List>
       </ScrollView>
@@ -153,20 +159,11 @@ class UniversityInfo extends Component {
 
 class FacultyInfo extends Component {
   render() {
-    var {data, universities, type, toggleModal} = this.props;
+    var {faculties, id, universities, closeModal} = this.props;
+    var data = faculties[id];
     var {Courses, Desc, IGP, Name, Picture, University, Website} = data;
-    // close button for faculties and unis
-    var closeButton = (
-      <Button
-        small transparent dark
-        onPress={()=>toggleModal(false)}
-        style={styles.closeButton}
-      >
-        <Icon name="close"/>
-      </Button>
-    )
 
-    // title for faculties
+    // title
     University = universities[University].ShortName;
     var title = (
       <View>
@@ -175,25 +172,7 @@ class FacultyInfo extends Component {
       </View>
     )
 
-    // picture for faculties and unis
-    var image = Picture ? (
-      <Image
-        style={[styles.image, styles.marginBottom]}
-        source={{uri: Picture}}
-      />
-    ) : null;
-
-    // description for faculties and unis
-    var description = Desc ? (
-      <Text style={[styles.marginBottom, styles.desc]}>{Desc}</Text>
-    ) : null;
-
-    // igp for faculties
-    var igp = IGP ? (
-      <Text style={styles.marginBottom}>IGP: {IGP}</Text>
-    ): null;
-
-    // website for faculties and unis
+    // website
     var website = Website ? (
       <Hyperlink
         linkDefault={true}
@@ -204,30 +183,26 @@ class FacultyInfo extends Component {
       </Hyperlink>
     ) : null;
 
-    // courses for faculties
-    var courses = (Courses && type == "faculty") ? (
-      <View>
-        <Text>Courses</Text>
-        <List>
-        {
-          Courses.split(", ").map((c, i) => (
-            <ListItem key={i}>
-              <Text>{c}</Text>
-            </ListItem>
-          ))
-        }</List>
-      </View>
-    ) : null;
+    // courses
+    // var courses = (Courses && type == "faculty") ? (
+    //   <View>
+    //     <Text>Courses</Text>
+    //     <List>
+    //     {
+    //       Courses.split(", ").map((c, i) => (
+    //         <ListItem key={i}>
+    //           <Text>{c}</Text>
+    //         </ListItem>
+    //       ))
+    //     }</List>
+    //   </View>
+    // ) : null;
 
     return (
       <ScrollView style={styles.container}>
-        {closeButton}
         {title}
-        {image}
-        {description}
-        {igp}
         {website}
-        {courses}
+        <Text>Booth Location: [Placeholder]</Text>
       </ScrollView>
     )
   }
@@ -246,7 +221,8 @@ const styles = StyleSheet.create({
     width: undefined
   },
   closeButton: {
-    alignSelf: "flex-end"
+    alignSelf: "flex-end",
+    marginTop: 15
   },
   marginBottom: {
     marginBottom: 20

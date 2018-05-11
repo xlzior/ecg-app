@@ -9,23 +9,23 @@ export default class UniversityList extends Component {
   constructor() {
     super();
     this.state = {
-      showModal: false,
+      isModalShown: false,
       university: "",
-      info: {},
+      id: "",
       type: ""
     };
   }
 
-  toggleModal(show) {
-    this.setState({ showModal: show })
+  openModal(type, id) {
+    this.setState({
+      isModalShown: true,
+      type,
+      id
+    })
   }
 
-  openModal(type, info) {
-    this.setState({
-      showModal: true,
-      type,
-      info
-    })
+  closeModal() {
+    this.setState({ isModalShown: false })
   }
 
   render() {
@@ -41,10 +41,10 @@ export default class UniversityList extends Component {
           })
         }
           <BoothInfo
-            showModal={this.state.showModal}
-            toggleModal={s=>this.toggleModal(s)}
+            isModalShown={this.state.isModalShown}
+            closeModal={s=>this.closeModal(s)}
             type={this.state.type}
-            info={this.state.info}
+            id={this.state.id}
             {...this.props}
           />
         </View>
@@ -59,7 +59,7 @@ class UniversitySection extends Component {
       <List>
         <ListItem
           itemDivider button
-          onPress={()=>this.props.openModal("university", this.props.university)}
+          onPress={()=>this.props.openModal("university", id)}
         >
           <Text>{name}</Text>
         </ListItem>
@@ -68,7 +68,7 @@ class UniversitySection extends Component {
             return <Faculty
               key={faculty.id}
               name={faculty.name}
-              openModal={()=>this.props.openModal("faculty", faculty)}
+              openModal={()=>this.props.openModal("faculty", faculty.id)}
             />
           })
         }
