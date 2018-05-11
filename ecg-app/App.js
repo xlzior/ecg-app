@@ -10,7 +10,7 @@ import { Feather, MaterialIcons, FontAwesome, Entypo } from "@expo/vector-icons"
 import MapView from "./components/Map";
 import UniversityListContainer from "./components/UniversityListContainer";
 import QuestionBank from "./components/QuestionBank";
-import Forms from "./components/Forms";
+import Form from "./components/Form";
 import About from "./components/About";
 
 // Firebase
@@ -177,7 +177,7 @@ export default class App extends Component {
           renderSelectedIcon={() => <FontAwesome name="wpforms" color="blue" size={20}/>}
           onPress={() => this.setState({ selectedTab: "forms" })}
         >
-          <Forms />
+          <Form />
         </TabNavigator.Item>
         <TabNavigator.Item
           selected={this.state.selectedTab === "about"}
