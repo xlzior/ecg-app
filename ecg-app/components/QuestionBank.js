@@ -11,6 +11,7 @@ export default class QuestionBank extends Component {
       ownQuestions: [],
       searchTerm: "",
       notes: "",
+      allNotes: {},
       showModal: false,
       showSection: {
         "My Questions": true,
@@ -18,16 +19,26 @@ export default class QuestionBank extends Component {
         "Science": true,
         "Arts": true,
       },
-      selectedQn: ""
+      selectedQn: {}
     }
   }
 
   componentDidMount() {
     AsyncStorage.getAllKeys()
     .then(keys => {
-      // make sure AsyncStorage contains the key "QuestionBank/Questions"
+      console.log(keys)
+      // make sure AsyncStorage contains the key "QuestionBank/Questions" and "QuestionBank/Notes"
       if (keys.indexOf("QuestionBank/Questions") == -1) {
-        AsyncStorage.setItem("QuestionBank/Questions", "")
+        AsyncStorage.setItem("QuestionBank/Questions", " ")
+      }
+      
+      if (keys.indexOf("QuestionBank/Notes") == -1) {
+        AsyncStorage.setItem("QuestionBank/Notes", " ")
+      } else {
+        // load the notes from async storage into state
+        AsyncStorage.getItem("QuestionBank/Notes")
+        .then(data => JSON.parse(data))
+        .then(allNotes => this.setState({ allNotes }))
       }
     })
     .then(()=>this.addNewQuestion());
@@ -77,13 +88,35 @@ export default class QuestionBank extends Component {
   }
 
   openNotes(id, question) {
-    console.log(id, question);
-    this.setState({ selectedQn: question })
+    let notes = this.state.allNotes[id] || "";
+
+    this.setState({
+      selectedQn: {id, question},
+      notes
+    })
     this.popupDialog.show();
   }
 
-  closeNotes() {
-    this.popupDialog.hide();
+  saveNotes() {
+    let {notes, selectedQn} = this.state;
+    // get notes from async storage and add to the store
+    AsyncStorage.getItem("QuestionBank/Notes")
+    .then(data => {
+      try { return JSON.parse(data) }
+      catch (error) { return {} }
+    })
+    .then((allNotes)=> {
+      if (notes != "") {
+        allNotes[selectedQn.id] = notes;
+        this.setState({
+          notes: "",
+          allNotes
+        });
+        AsyncStorage.setItem("QuestionBank/Notes", JSON.stringify(allNotes))
+        .catch(e => console.error("Error saving data", e))
+      }
+    })
+    .catch(e => console.error("Error retrieving data", e));
   }
 
   setRef(ref) {
@@ -134,7 +167,7 @@ export default class QuestionBank extends Component {
     // prompt that appears if no questions have been added
     if (ownQuestionsList.length == 0) {
       ownQuestionsList = (
-        <ListItem>
+        <ListItem key={0}>
           <Text>Add your own questions to ask university representatives here!</Text>
         </ListItem>
       )
@@ -187,10 +220,11 @@ export default class QuestionBank extends Component {
           <List>{listDisplay}</List>
         </Content>
         <QuestionNotes
-          title={selectedQn}
+          title={selectedQn.question}
           notes={notes}
           setRef={ref=>this.setRef(ref)}
           handleEditNotes={n=>this.handleEditNotes(n)}
+          saveNotes={()=>this.saveNotes()}
         />
       </Container>
     )
@@ -202,12 +236,13 @@ class QuestionNotes extends Component {
     if (this.props.showModal) this.popupDialog.show();
   }
   render() {
-    var {title, notes, setRef, handleEditNotes} = this.props;
+    var {title, notes, setRef, handleEditNotes, saveNotes} = this.props;
     return (
       <PopupDialog
         ref={setRef}
         dialogTitle={<DialogTitle title={title} />}
-        height="80%"
+        height={0.7}
+        onDismissed={()=>saveNotes()}
       >
         <Content>
           <Input
