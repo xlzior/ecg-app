@@ -31,7 +31,8 @@ export default class App extends Component {
       universities: [],
       asyncStorage: {},
       fontLoaded: false,
-      last_update: ""
+      last_update: "",
+      mapLocation: ""
     }
     this.datastoreRef = firebaseApp.database().ref();
     this.imagesRef = firebase.storage().ref().child('images');
@@ -53,9 +54,9 @@ export default class App extends Component {
     let faculty = this.state.asyncStorage["Faculty"];
     let uni = this.state.asyncStorage["University"];
     let universities;
-
+  
     if (key == "University" && faculty) {
-      universities = this.flattenUnis(value, faculty)
+      universities = this.flattenUnis(value, faculty);
     } else if (key == "Faculty" && uni) {
       universities = this.flattenUnis(uni, value);
     }
@@ -127,6 +128,13 @@ export default class App extends Component {
     this.listenForItems(this.datastoreRef);
   }
 
+  openMap(location) {
+    this.setState({
+      selectedTab: "map",
+      mapLocation: location
+    })
+  }
+
   render() {
     if (!this.state.fontLoaded) return <View><Text>Loading...</Text></View>
     return (
@@ -141,6 +149,7 @@ export default class App extends Component {
           <MapView
             imagesRef={this.imagesRef}
             universities={this.state.universities}
+            location={this.state.mapLocation}
             FBmap={this.state.asyncStorage["Map"]}
             FBuniversity={this.state.asyncStorage["University"]}
             FBfaculty={this.state.asyncStorage["Faculty"]}
@@ -157,6 +166,7 @@ export default class App extends Component {
             universities={this.state.universities}
             FBuniversity={this.state.asyncStorage["University"]}
             FBfaculty={this.state.asyncStorage["Faculty"]}
+            imagesRef={this.imagesRef}
           />
         </TabNavigator.Item>
         <TabNavigator.Item

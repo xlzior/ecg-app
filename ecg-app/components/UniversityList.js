@@ -45,6 +45,7 @@ export default class UniversityList extends Component {
             closeModal={s=>this.closeModal(s)}
             type={this.state.type}
             id={this.state.id}
+            imagesRef={this.props.imagesRef}
             {...this.props}
           />
         </View>

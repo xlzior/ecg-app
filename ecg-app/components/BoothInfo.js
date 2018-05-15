@@ -48,6 +48,7 @@ export default class BoothInfo extends Component {
           id={id}
           closeModal={()=>closeModal()}
           changeView={id=>this.changeView(id)}
+          imagesRef={this.props.imagesRef}
         />
       )
     }
@@ -77,19 +78,43 @@ export default class BoothInfo extends Component {
 }
 
 class UniversityInfo extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      Picture: ""
+    }
+  }
+
+  componentDidMount() {
+    var {id, universities} = this.props;
+    var data = universities[id];
+
+    if (data.Picture !== "") {
+      var imageRef = this.props.imagesRef.child(data.Picture);
+      
+      imageRef.getDownloadURL()
+      .then(url => {
+        console.log(url);
+        this.setState({Picture: url});
+      })
+      .catch(e => console.error(e))
+    }
+  }
+
+
   render() {
     var {faculties, id, universities, closeModal, changeView} = this.props;
     var data = universities[id];
-    var {Desc, Faculties, Name, Picture, ShortName, Website, IGP, Courses, Scholarships, Admissions, Prerequisites} = data;
+    var {Desc, Faculties, Name, ShortName, Website, IGP, Courses, Scholarships, Admissions, Prerequisites} = data;
 
     // title
     var title = <Text style={[styles.header, styles.marginBottom]}>{Name} ({ShortName})</Text>;
 
     // picture
-    var image = Picture ? (
+    var image = this.state.Picture ? (
       <Image
         style={[styles.image, styles.marginBottom]}
-        source={{uri: Picture}}
+        source={{uri: this.state.Picture}}
       />
     ) : null;
 
@@ -217,8 +242,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold"
   },
   image: {
-    height: 200,
-    width: undefined
+    height: 100,
   },
   closeButton: {
     alignSelf: "flex-end",

@@ -74,6 +74,13 @@ export default class MapView extends Component {
       // add the info to the existing object called locations
       locations[index].boothIds = boothIds;
     }
+    if (props.location !== "") {
+      return {
+        universities: props.universities,
+        locations,
+        location: props.location
+      }
+    }
     return {
       universities: props.universities,
       locations
@@ -90,7 +97,7 @@ export default class MapView extends Component {
     var image = locations.find(e => e.id == location);
     var imageIndex = locations.indexOf(image);
     
-    if (image.source) { // image.source.uri might not exist if the download URL has not been fetched from firebase
+    if (image && image.source) { // image.source.uri might not exist if the download URL has not been fetched from firebase
       var imageDisplay = (
         <View>
           <TouchableOpacity onPress={()=>this.setState({isImageOpen: true})}>
@@ -156,6 +163,7 @@ export default class MapView extends Component {
             universities={filteredUnis}
             FBuniversity={this.props.FBuniversity}
             FBfaculty={this.props.FBfaculty}
+            imagesRef={this.props.imagesRef}
           />
         </Content>
       </Container>

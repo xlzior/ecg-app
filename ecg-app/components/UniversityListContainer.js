@@ -79,6 +79,7 @@ export default class UniversityListContainer extends Component {
             universities={this.state.universities}
             FBuniversity={this.props.FBuniversity}
             FBfaculty={this.props.FBfaculty}
+            imagesRef={this.props.imagesRef}
           />
         </Content>
       </Container>
