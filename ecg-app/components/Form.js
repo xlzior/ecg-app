@@ -86,35 +86,40 @@ class Main extends Component {
 }
 
 class Student extends Component {
-  render() {
-    return (
-      <View style={{ flex: 1 }}>
-        <WebView
-          source={{uri: "https://docs.google.com/forms/d/e/1FAIpQLSfeLZ2NMKAT7vV45q-OBasxLfpeQY3tBTq2tdktio4vCsjLjA/viewform?embedded=true"}}
-          style={{ flex: 1 }}
-        />
-      </View>
-    )
+
+  constructor() {
+    super();
+    this.state = {
+      uri: "https://docs.google.com/forms/d/e/1FAIpQLSfeLZ2NMKAT7vV45q-OBasxLfpeQY3tBTq2tdktio4vCsjLjA/viewform?embedded=true"
+    }
+
+    this.onMessage = this.onMessage.bind(this);
   }
-}
 
-class University extends Component {
-
-  onMessage(data) {
-    console.log(data);
+  onMessage(event) {
+    var editUrl = event.nativeEvent.data;
+    this.setState({ uri: editUrl });
   }
 
   render() {
     const jsCode = `
+      function whenRNPostMessageReady(cb) {
+          if (postMessage.length === 1) cb();
+          else setTimeout(function() { whenRNPostMessageReady(cb) }, 1000);
+      }
+
       var href = window.location.href;
-      if (href.includes("formResponse")) {
-        window.postMessage($("a").href);
+
+      if (~ href.indexOf("formResponse")) {
+        whenRNPostMessageReady(function() {
+          postMessage(document.getElementsByTagName("a")[0].href);
+        });
       }
     `
     return (
       <View style={{ flex: 1 }}>
         <WebView
-          source={{uri: "https://docs.google.com/forms/d/e/1FAIpQLSd6cqzHKZuNCQ-gErKriYRrMpkEHbUQYq7FREAJXxJMUkQY1Q/viewform?embedded=true"}}
+          source={{ uri: this.state.uri }}
           onMessage={this.onMessage}
           style={{ flex: 1 }}
           injectedJavaScript={jsCode}
@@ -124,4 +129,46 @@ class University extends Component {
   }
 }
 
-// https://github.com/facebook/react-native/issues/11594
+class University extends Component {
+
+  constructor() {
+    super();
+    this.state = {
+      uri: "https://docs.google.com/forms/d/e/1FAIpQLSd6cqzHKZuNCQ-gErKriYRrMpkEHbUQYq7FREAJXxJMUkQY1Q/viewform?embedded=true"
+    }
+
+    this.onMessage = this.onMessage.bind(this);
+  }
+
+  onMessage(event) {
+    var editUrl = event.nativeEvent.data;
+    this.setState({ uri: editUrl });
+  }
+
+  render() {
+    const jsCode = `
+      function whenRNPostMessageReady(cb) {
+          if (postMessage.length === 1) cb();
+          else setTimeout(function() { whenRNPostMessageReady(cb) }, 1000);
+      }
+
+      var href = window.location.href;
+
+      if (~ href.indexOf("formResponse")) {
+        whenRNPostMessageReady(function() {
+          postMessage(document.getElementsByTagName("a")[0].href);
+        });
+      }
+    `
+    return (
+      <View style={{ flex: 1 }}>
+        <WebView
+          source={{ uri: this.state.uri }}
+          onMessage={this.onMessage}
+          style={{ flex: 1 }}
+          injectedJavaScript={jsCode}
+        />
+      </View>
+    )
+  }
+}
