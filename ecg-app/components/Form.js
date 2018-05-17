@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { WebView, View } from "react-native";
+import { AsyncStorage, WebView, View } from "react-native";
 import { Header, Left, Body, Right, Title, Icon } from "native-base"
 import { Container, Content, Button, Text } from "native-base"
 
@@ -98,7 +98,13 @@ class Student extends Component {
 
   onMessage(event) {
     var editUrl = event.nativeEvent.data;
+    AsyncStorage.setItem("Forms/Student", editUrl);
     this.setState({ uri: editUrl });
+  }
+
+  async componentDidMount() {
+    const uri = await AsyncStorage.getItem("Forms/Student")
+    if (uri) this.setState({ uri });
   }
 
   render() {
@@ -142,7 +148,13 @@ class University extends Component {
 
   onMessage(event) {
     var editUrl = event.nativeEvent.data;
+    AsyncStorage.setItem("Forms/University", editUrl);
     this.setState({ uri: editUrl });
+  }
+
+  async componentDidMount() {
+    const uri = await AsyncStorage.getItem("Forms/University")
+    if (uri) this.setState({ uri });
   }
 
   render() {
