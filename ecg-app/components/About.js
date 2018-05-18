@@ -1,8 +1,10 @@
 import React, { Component } from "react";
-import { AsyncStorage } from "react-native";
+import { Platform, AsyncStorage, Linking } from "react-native";
 import { Header, Left, Body, Right, Title, Icon } from "native-base"
 import { Container, Content, Button, Text, Card, CardItem } from "native-base"
+import { AppInstalledChecker } from 'react-native-check-app-install';
 import Moment from "react-moment"
+import { FontAwesome } from "@expo/vector-icons";
 
 console.disableYellowBox = true;
 
@@ -71,7 +73,8 @@ class Main extends Component {
   constructor() {
     super();
     this.state = {
-      last_update: ""
+      last_update: "",
+      instagram_url: "https://www.instagram.com/hciecg/"
     };
   }
 
@@ -82,11 +85,31 @@ class Main extends Component {
     return { last_update: last_update };
   }
 
+  async componentDidMount() {
+    isInstalled = await AppInstalledChecker.checkURLScheme("instagram");
+    if (isInstalled) {
+      var url = "";
+
+      if (Platform.OS === "ios")
+        url = "instagram://user?username=hciecg";
+      else if (Platform.OS === "android")
+        url = "intent://instagram.com/_u/hciecg/#Intent;package=com.instagram.android;scheme=https;end";
+
+      supported = await Linking.canOpenURL(url);
+      if (supported) {
+        this.setState("instagram_url", url);
+      } else console.log("Deeplinking not supported.");
+    } else console.log("Instagram not installed.")
+  }
+
   render() {
     return (
       <Content>
         <Button block info onPress={()=>this.props.setView("faq")}>
           <Text>FAQ</Text>
+        </Button>
+        <Button block info onPress={()=>Linking.openURL(this.state.instagram_url)}>
+          <FontAwesome name="instagram" color="white" size={20}/><Text>Instagram</Text>
         </Button>
         <Text>
           Last Updated: <Moment element={Text} fromNow>{this.state.last_update}</Moment>
