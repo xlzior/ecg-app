@@ -1,6 +1,6 @@
 import React, { Component } from "react";
-import { StyleSheet, AsyncStorage } from "react-native";
-import { Container, Content, Text, Header, Body, Title, List, ListItem, Form, Item, Input, Icon, Button } from "native-base";
+import { StyleSheet, AsyncStorage, Share, Platform } from "react-native";
+import { Container, Content, Text, Header, Body, Title, List, ListItem, Form, Item, Input, Icon, Button, Left, Right } from "native-base";
 import PopupDialog, { DialogTitle } from 'react-native-popup-dialog';
 
 export default class QuestionBank extends Component {
@@ -26,7 +26,6 @@ export default class QuestionBank extends Component {
   componentDidMount() {
     AsyncStorage.getAllKeys()
     .then(keys => {
-      console.log(keys)
       // make sure AsyncStorage contains the key "QuestionBank/Questions" and "QuestionBank/Notes"
       if (keys.indexOf("QuestionBank/Questions") == -1) {
         AsyncStorage.setItem("QuestionBank/Questions", " ")
@@ -41,7 +40,8 @@ export default class QuestionBank extends Component {
         .then(allNotes => this.setState({ allNotes }))
       }
     })
-    .then(()=>this.addNewQuestion());
+    .then(()=>this.addNewQuestion())
+    .catch(e => console.error(e));
   }
 
   static getDerivedStateFromProps(props) {
@@ -129,6 +129,30 @@ export default class QuestionBank extends Component {
     this.setState({showSection});
   }
 
+  handleShare() {
+    var toShare = [];
+    var {questionBank, ownQuestions, allNotes} = this.state;
+
+    // export question bank questions and notes
+    for (var section in questionBank) {
+      for (var qnKey in questionBank[section]) {
+        toShare.push("\n"+questionBank[section][qnKey]+"\n");
+        if (allNotes[qnKey]) toShare.push(allNotes[qnKey]+"\n");
+      }
+    }
+
+    // export own questions and notes
+    ownQuestions.forEach((q, i) => {
+      toShare.push("\n"+q+"\n");
+      if (allNotes[i]) toShare.push(allNotes[i]+"\n")
+    })
+
+    Share.share({
+      title: 'Question Bank & Notes',
+      message: toShare.join("")
+    })
+  }
+
   render() {
     var {questionBank, ownQuestions, searchTerm, showModal, showSection, selectedQn, notes} = this.state;
     // generate sections from question bank
@@ -163,7 +187,7 @@ export default class QuestionBank extends Component {
           onPress={()=>this.removeQuestion(q)}
         />
       </ListItem>
-    ))
+    ));
     // prompt that appears if no questions have been added
     if (ownQuestionsList.length == 0) {
       ownQuestionsList = (
@@ -181,7 +205,7 @@ export default class QuestionBank extends Component {
     }
     var listDisplay = [];
     for (let section in questionsList) {
-      var iconName = showSection[section] ? "ios-arrow-up" : "ios-arrow-down"
+      var iconName = showSection[section] ? "ios-arrow-up" : "ios-arrow-down";
       // section header
       listDisplay.push(
         <ListItem
@@ -201,9 +225,18 @@ export default class QuestionBank extends Component {
     return (
       <Container>
         <Header>
+          {Platform.OS === "ios" && <Left/>}
           <Body>
             <Title>Question Bank</Title>
           </Body>
+          <Right>
+            <Button transparent>
+              <Icon
+                name="share"
+                onPress={()=>this.handleShare()}
+              />
+            </Button>
+          </Right>
         </Header>
         <Content>
           <Form>
