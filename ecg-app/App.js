@@ -35,7 +35,7 @@ export default class App extends Component {
       mapLocation: ""
     }
     this.datastoreRef = firebaseApp.database().ref();
-    this.imagesRef = firebase.storage().ref().child('images');
+    this.imagesRef = firebase.storage().ref().child("images");
   }
 
   listenForItems(datastoreRef) {
@@ -118,11 +118,13 @@ export default class App extends Component {
 
   async componentDidMount() {
     Font.loadAsync({
-      'Roboto_medium': require('./components/assets/Roboto_medium.ttf'),
+      "Roboto_medium": require("./components/assets/Roboto_medium.ttf"),
     })
     .then(() => {
       this.setState({ fontLoaded: true });
-      // console.log("font loaded")
+    })
+    .catch(() => {
+      this.setState({ fontLoaded: true });
     });
 
     this.listenForItems(this.datastoreRef);
@@ -136,7 +138,7 @@ export default class App extends Component {
   }
 
   render() {
-    if (!this.state.fontLoaded) return <View><Text>Loading...</Text></View>
+    if (!this.state.fontLoaded) return <View style={styles.center}><Text>Loading...</Text></View>
     return (
       <TabNavigator>
         <TabNavigator.Item
@@ -153,6 +155,7 @@ export default class App extends Component {
             FBmap={this.state.asyncStorage["Map"]}
             FBuniversity={this.state.asyncStorage["University"]}
             FBfaculty={this.state.asyncStorage["Faculty"]}
+            openMap={l=>this.openMap(l)}
           />
         </TabNavigator.Item>
         <TabNavigator.Item
@@ -164,9 +167,11 @@ export default class App extends Component {
         >
           <UniversityListContainer
             universities={this.state.universities}
+            FBmap={this.state.asyncStorage["Map"]}
             FBuniversity={this.state.asyncStorage["University"]}
             FBfaculty={this.state.asyncStorage["Faculty"]}
             imagesRef={this.imagesRef}
+            openMap={l=>this.openMap(l)}
           />
         </TabNavigator.Item>
         <TabNavigator.Item
@@ -207,4 +212,9 @@ export default class App extends Component {
 }
 
 const styles = StyleSheet.create({
+  center: {
+    alignItems: "center",
+    flex: 1,
+    justifyContent: "center"
+  }
 });

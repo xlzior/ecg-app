@@ -12,14 +12,12 @@ export default class UniversityList extends Component {
       isModalShown: false,
       university: "",
       id: "",
-      type: ""
     };
   }
 
-  openModal(type, id) {
+  openModal(id) {
     this.setState({
       isModalShown: true,
-      type,
       id
     })
   }
@@ -36,14 +34,13 @@ export default class UniversityList extends Component {
             return <UniversitySection
               key={university.id}
               university={university}
-              openModal={(t, i)=>this.openModal(t, i)}
+              openModal={(i)=>this.openModal(i)}
             />
           })
         }
           <BoothInfo
             isModalShown={this.state.isModalShown}
             closeModal={s=>this.closeModal(s)}
-            type={this.state.type}
             id={this.state.id}
             imagesRef={this.props.imagesRef}
             {...this.props}
@@ -60,7 +57,7 @@ class UniversitySection extends Component {
       <List>
         <ListItem
           itemDivider button
-          onPress={()=>this.props.openModal("university", id)}
+          onPress={()=>this.props.openModal(id)}
         >
           <Text>{name}</Text>
         </ListItem>
@@ -69,7 +66,7 @@ class UniversitySection extends Component {
             return <Faculty
               key={faculty.id}
               name={faculty.name}
-              openModal={()=>this.props.openModal("faculty", faculty.id)}
+              openModal={()=>this.props.openModal(faculty.id)}
             />
           })
         }

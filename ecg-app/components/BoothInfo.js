@@ -11,6 +11,7 @@ export default class BoothInfo extends Component {
     this.state = {
       universities: {},
       faculties: {},
+      map: {},
       id: ""
     }
   }
@@ -19,6 +20,7 @@ export default class BoothInfo extends Component {
     return {
       universities: props.FBuniversity,
       faculties: props.FBfaculty,
+      map: props.FBmap,
       id: props.id
     }
   }
@@ -28,27 +30,29 @@ export default class BoothInfo extends Component {
   }
 
   render() {
-    var {isModalShown, closeModal} = this.props;
-    var {id} = this.state;
+    var {isModalShown, closeModal, openMap, imagesRef} = this.props;
+    var {id, map, universities, faculties} = this.state;
     if (id.indexOf("F") != -1) {
       var display = (
         <FacultyInfo
-          universities={this.state.universities}
-          faculties={this.state.faculties}
+          map={map}
+          universities={universities}
+          faculties={faculties}
           id={id}
           closeModal={()=>closeModal()}
           changeView={id=>this.changeView(id)}
+          openMap={l=>openMap(l)}
         />
       )
     } else if (id.indexOf("U") != -1) {
       var display = (
         <UniversityInfo
-          universities={this.state.universities}
-          faculties={this.state.faculties}
+          map={map}
+          universities={universities}
+          faculties={faculties}
           id={id}
-          closeModal={()=>closeModal()}
           changeView={id=>this.changeView(id)}
-          imagesRef={this.props.imagesRef}
+          imagesRef={imagesRef}
         />
       )
     }
@@ -86,11 +90,11 @@ class UniversityInfo extends Component {
   }
 
   componentDidMount() {
-    var {id, universities} = this.props;
+    var {id, universities, imagesRef} = this.props;
     var data = universities[id];
 
     if (data.Picture !== "") {
-      var imageRef = this.props.imagesRef.child(data.Picture);
+      var imageRef = imagesRef.child(data.Picture);
       
       imageRef.getDownloadURL()
       .then(url => {
@@ -146,6 +150,7 @@ class UniversityInfo extends Component {
           linkStyle={styles.link}
           style={styles.marginBottom}
           linkText={ url => key }
+          key={key}
         >
           <Text>{links[key]}</Text>
         </Hyperlink>
@@ -184,9 +189,9 @@ class UniversityInfo extends Component {
 
 class FacultyInfo extends Component {
   render() {
-    var {faculties, id, universities, closeModal} = this.props;
+    var {map, faculties, id, universities, closeModal, openMap} = this.props;
     var data = faculties[id];
-    var {Courses, Desc, IGP, Name, Picture, University, Website} = data;
+    var {Name, University, Website, Courses} = data;
 
     // title
     University = universities[University].ShortName;
@@ -208,26 +213,59 @@ class FacultyInfo extends Component {
       </Hyperlink>
     ) : null;
 
-    // courses
-    // var courses = (Courses && type == "faculty") ? (
-    //   <View>
-    //     <Text>Courses</Text>
-    //     <List>
-    //     {
-    //       Courses.split(", ").map((c, i) => (
-    //         <ListItem key={i}>
-    //           <Text>{c}</Text>
-    //         </ListItem>
-    //       ))
-    //     }</List>
-    //   </View>
-    // ) : null;
+    // location
+    for (let location in map) {
+      for (let uni in map[location]) {
+        if (map[location][uni].indexOf(id) != -1) {
+          var locationDisplay = (
+            <View>
+              <Text style={styles.marginBottom}>
+                Booth Location: {location}
+              </Text>
+              <Button
+                onPress={()=>{
+                  openMap(location);
+                  closeModal();
+                }}
+                style={styles.marginBottom}
+              >
+                <Text>Go to map</Text>
+              </Button>
+            </View>
+          )
+        }
+      }
+    }
+
+    // courses for faculties which have interesting programmes
+    var coursesList = []
+    for (let key in Courses) {
+      coursesList.push(
+        <Hyperlink
+          linkDefault={true}
+          linkStyle={styles.link}
+          style={styles.marginBottom}
+          linkText={ url => key }
+          key={key}
+        >
+          <Text>{Courses[key]}</Text>
+        </Hyperlink>
+      )
+    }
+
+    var courses = Courses ? (
+      <View>
+        <Text style={styles.marginBottom}>Programmes</Text>
+        <List>{coursesList}</List>
+      </View>
+    ) : null;
 
     return (
       <ScrollView style={styles.container}>
         {title}
         {website}
-        <Text>Booth Location: [Placeholder]</Text>
+        {locationDisplay}
+        {courses}
       </ScrollView>
     )
   }

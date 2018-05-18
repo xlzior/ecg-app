@@ -56,6 +56,8 @@ export default class UniversityListContainer extends Component {
   }
 
   render() {
+    var {universities, searchTerm} = this.state;
+    var {FBuniversity, FBmap, FBfaculty, imagesRef, openMap} = this.props
     return (
       <Container>
         <Header>
@@ -69,17 +71,19 @@ export default class UniversityListContainer extends Component {
               <Input
                 placeholder="Search"
                 onChangeText={t => this.handleKeypress(t)}
-                value={this.state.searchTerm}
+                value={searchTerm}
                 returnKeyType="search"
                 clearButtonMode="always"
               />
             </Item>
           </Form>
           <UniversityList
-            universities={this.state.universities}
-            FBuniversity={this.props.FBuniversity}
-            FBfaculty={this.props.FBfaculty}
-            imagesRef={this.props.imagesRef}
+            universities={universities}
+            FBuniversity={FBuniversity}
+            FBfaculty={FBfaculty}
+            FBmap={FBmap}
+            imagesRef={imagesRef}
+            openMap={l=>openMap(l)}
           />
         </Content>
       </Container>

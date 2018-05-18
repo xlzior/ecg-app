@@ -10,6 +10,7 @@ const {width} = Dimensions.get("window");
 export default class MapView extends Component {
   constructor(props) {
     super(props);
+    // TODO: put this on firebase instead
     this.state = {
       locations: [
         {
@@ -28,7 +29,7 @@ export default class MapView extends Component {
           fileName: "dl3.png"
         },
       ],
-      location: "hall",
+      location: "Hall",
       isImageOpen: false,
       universities: []
     }
@@ -60,15 +61,16 @@ export default class MapView extends Component {
 
   static getDerivedStateFromProps(props, state) {
     var locations = state.locations.slice();
-    for (let name in props.FBmap) {
+    for (let locationName in props.FBmap) {
       // for each location in the map
-      var location = state.locations.find(l => l.name == name);
+      var location = state.locations.find(l => l.name == locationName);
       var index = locations.indexOf(location);
 
       // compile a list of boothIds in the location
       var boothIds = []
-      for (let booth in props.FBmap[name]) {
-        boothIds.push(props.FBmap[name][booth].Link)
+      for (let uni in props.FBmap[locationName]) {
+        var uniSection = [uni, ...props.FBmap[locationName][uni].split(", ")]
+        boothIds.push(...uniSection);
       }
 
       // add the info to the existing object called locations
@@ -93,8 +95,9 @@ export default class MapView extends Component {
 
   render() {
     var {universities, locations, location, isImageOpen} = this.state;
+    var {FBmap, FBuniversity, FBfaculty, imagesRef, openMap} = this.props;
     // generate map
-    var image = locations.find(e => e.id == location);
+    var image = locations.find(e => e.name == location);
     var imageIndex = locations.indexOf(image);
     
     if (image && image.source) { // image.source.uri might not exist if the download URL has not been fetched from firebase
@@ -121,7 +124,7 @@ export default class MapView extends Component {
     }
 
     // generate items for the dropdown menu
-    let pickerItems = locations.map(e => <Picker.Item key={e.id} label={e.name} value={e.id}/>)
+    let pickerItems = locations.map(e => <Picker.Item key={e.id} label={e.name} value={e.name}/>)
 
     // generate university list by filtering for unis in the selected location
     var filteredUnis = [];
@@ -129,7 +132,7 @@ export default class MapView extends Component {
       var {universities} = this.state;
       universities.forEach(uni => {
         var filteredFacs = uni.faculties.filter(fac => {
-          var boothIds = locations.find(l => l.id == location).boothIds;
+          var boothIds = locations.find(l => l.name == location).boothIds;
           if (boothIds) return boothIds.indexOf(fac.id) != -1;
         });
         if (filteredFacs.length > 0) {
@@ -161,9 +164,11 @@ export default class MapView extends Component {
           {imageDisplay}
           <UniversityList
             universities={filteredUnis}
-            FBuniversity={this.props.FBuniversity}
-            FBfaculty={this.props.FBfaculty}
-            imagesRef={this.props.imagesRef}
+            FBmap={FBmap}
+            FBuniversity={FBuniversity}
+            FBfaculty={FBfaculty}
+            imagesRef={imagesRef}
+            openMap={l=>openMap(l)}
           />
         </Content>
       </Container>
