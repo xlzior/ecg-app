@@ -16,30 +16,27 @@ export default class Form extends Component {
     this.state = {
       view: "main", // main, student, university
       title: "Forms"
-    }
-
-    this.setView = this.setView.bind(this);
+    };
   }
 
   setView(view) {
-    this.setState({ view: view });
-    this.setState({ title: titles[view] });
+    this.setState({ view: view, title: titles[view] });
   }
 
   getView() {
     if (this.state.view === "main")
       return <Main
-              setView={this.setView}
+              setView={(view)=>this.setView(view)}
               style={{ flex: 1 }}
               />
     else if (this.state.view === "student")
       return <Student
-              setView={this.setView}
+              setView={(view)=>this.setView(view)}
               style={{ flex: 1 }}
               />
     else // university
       return <University
-              setView={this.setView}
+              setView={(view)=>this.setView(view)}
               style={{ flex: 1 }}
               />
   }
@@ -91,9 +88,7 @@ class Student extends Component {
     super();
     this.state = {
       uri: "https://docs.google.com/forms/d/e/1FAIpQLSfeLZ2NMKAT7vV45q-OBasxLfpeQY3tBTq2tdktio4vCsjLjA/viewform?embedded=true"
-    }
-
-    this.onMessage = this.onMessage.bind(this);
+    };
   }
 
   onMessage(event) {
@@ -121,12 +116,12 @@ class Student extends Component {
           postMessage(document.getElementsByTagName("a")[0].href);
         });
       }
-    `
+    `;
     return (
       <View style={{ flex: 1 }}>
         <WebView
           source={{ uri: this.state.uri }}
-          onMessage={this.onMessage}
+          onMessage={(e)=>this.onMessage(e)}
           style={{ flex: 1 }}
           injectedJavaScript={jsCode}
         />
@@ -141,9 +136,7 @@ class University extends Component {
     super();
     this.state = {
       uri: "https://docs.google.com/forms/d/e/1FAIpQLSd6cqzHKZuNCQ-gErKriYRrMpkEHbUQYq7FREAJXxJMUkQY1Q/viewform?embedded=true"
-    }
-
-    this.onMessage = this.onMessage.bind(this);
+    };
   }
 
   onMessage(event) {
@@ -171,12 +164,12 @@ class University extends Component {
           postMessage(document.getElementsByTagName("a")[0].href);
         });
       }
-    `
+    `;
     return (
       <View style={{ flex: 1 }}>
         <WebView
           source={{ uri: this.state.uri }}
-          onMessage={this.onMessage}
+          onMessage={(e)=>this.onMessage(e)}
           style={{ flex: 1 }}
           injectedJavaScript={jsCode}
         />

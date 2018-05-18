@@ -21,24 +21,21 @@ export default class About extends Component {
       view: "main", // faq, main
       title: "About"
     };
-
-    this.setView = this.setView.bind(this);
   }
 
   setView(view) {
-    this.setState({ view: view });
-    this.setState({ title: titles[view] });
+    this.setState({ view: view, title: titles[view] });
   }
 
   getView() {
     if (this.state.view === "main")
       return <Main
-                setView={this.setView}
+                setView={(view) => this.setView(view)}
                 last_update={this.props.last_update}
               />
     else if (this.state.view === "faq")
       return <FAQ
-                setView={this.setView}
+                setView={(view) => this.setView(view)}
                 {...this.props}
               />
   }

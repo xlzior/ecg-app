@@ -54,7 +54,7 @@ export default class App extends Component {
     let faculty = this.state.asyncStorage["Faculty"];
     let uni = this.state.asyncStorage["University"];
     let universities;
-  
+
     if (key == "University" && faculty) {
       universities = this.flattenUnis(value, faculty);
     } else if (key == "Faculty" && uni) {
