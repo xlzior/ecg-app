@@ -75,13 +75,51 @@ export default class App extends Component {
     }
   }
 
-  async fetchAsync(key) {
-    try {
-      const value = await AsyncStorage.getItem(key);
-      return value;
-    } catch (error) {
-      console.error("Error retrieving data", error);
-    }
+  fetchAsync() {
+    AsyncStorage.getItem("last_update")
+    .then(last_update => {
+      var oneWeekAgo = new Date();
+      oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+      oneWeekAgo = JSON.stringify(oneWeekAgo.toISOString())
+
+      // update database only if last update was more than a week ago
+      if (last_update == null || last_update < oneWeekAgo) this.listenForItems(this.datastoreRef);
+      else {
+        console.log("retrieving from AsyncStorage...")
+        // if the async storage is still up to date, retrieve data and set it to state
+        let asyncStorage = this.state.asyncStorage;
+        let universities;
+
+        AsyncStorage.getAllKeys()
+        .then(keys => {
+          for (let key of keys) {
+            AsyncStorage.getItem(key)
+            .then(value => {
+              if (value != " ") asyncStorage[key] = JSON.parse(value);
+
+              // if both faculty and uni are defined, flatten unis 
+              let faculty = asyncStorage["Faculty"];
+              let uni = asyncStorage["University"];
+              if (faculty && uni) universities = this.flattenUnis(uni, faculty);
+
+              this.setState({asyncStorage, universities});
+            })
+            .catch(e => {
+              console.error(`Error retrieving ${key} from AsyncStorage`, e);
+              this.listenForItems(this.datastoreRef);
+            })
+          }
+        })
+        .catch(e => {
+          console.error("Error getting keys from AsyncStorage", e);
+          this.listenForItems(this.datastoreRef);
+        })
+      }
+    })
+    .catch(e => {
+      console.error("Error retrieving last_update from AsyncStorage", e);
+      this.listenForItems(this.datastoreRef);
+    })
   }
 
   flattenUnis(uni, faculty) {
@@ -117,17 +155,11 @@ export default class App extends Component {
   }
 
   async componentDidMount() {
-    Font.loadAsync({
-      "Roboto_medium": require("./components/assets/Roboto_medium.ttf"),
-    })
-    .then(() => {
-      this.setState({ fontLoaded: true });
-    })
-    .catch(() => {
-      this.setState({ fontLoaded: true });
-    });
-
-    this.listenForItems(this.datastoreRef);
+    Font.loadAsync({"Roboto_medium": require("./components/assets/Roboto_medium.ttf")})
+    .then(() => this.setState({ fontLoaded: true }))
+    .catch(() => this.setState({ fontLoaded: true }));
+    
+    this.fetchAsync();
   }
 
   openMap(location) {

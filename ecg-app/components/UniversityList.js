@@ -27,10 +27,13 @@ export default class UniversityList extends Component {
   }
 
   render() {
+    var unisToDisplay = this.props.universities
+    if (this.props.filteredUnis) unisToDisplay = this.props.filteredUnis;
+
     return (
         <View>
         {
-          this.props.universities.map((university) => {
+          unisToDisplay.map((university) => {
             return <UniversitySection
               key={university.id}
               university={university}
@@ -59,7 +62,6 @@ class UniversitySection extends Component {
   }
 
   toggleShow() {
-    console.log("toggle")
     this.setState({showUni: !this.state.showUni})
   }
 

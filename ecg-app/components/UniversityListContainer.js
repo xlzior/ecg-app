@@ -33,7 +33,7 @@ export default class UniversityListContainer extends Component {
       universities.forEach(uni => {
         var filteredFacs = uni.faculties.filter(({details}) => {
           for (var key in details) {
-            var searchArea = details[key].toLowerCase();
+            var searchArea = JSON.stringify(details[key]).toLowerCase();
             if (searchArea.indexOf(searchTerm) != -1) {
               return true;
             }

@@ -31,26 +31,28 @@ export default class BoothInfo extends Component {
 
   render() {
     var {isModalShown, closeModal, openMap, imagesRef} = this.props;
+    var universitiesFlat = this.props.universities;
+
     var {id, map, universities, faculties} = this.state;
     if (id.indexOf("F") != -1) {
       var display = (
         <FacultyInfo
           map={map}
           universities={universities}
-          faculties={faculties}
           id={id}
+          data={faculties[id]}
           closeModal={()=>closeModal()}
           changeView={id=>this.changeView(id)}
           openMap={l=>openMap(l)}
         />
       )
     } else if (id.indexOf("U") != -1) {
+      var facultiesFlat = universitiesFlat.find(e => e.id == id).faculties;
       var display = (
         <UniversityInfo
           map={map}
-          universities={universities}
-          faculties={faculties}
-          id={id}
+          data={universities[id]}
+          faculties={facultiesFlat}
           changeView={id=>this.changeView(id)}
           imagesRef={imagesRef}
         />
@@ -90,25 +92,19 @@ class UniversityInfo extends Component {
   }
 
   componentDidMount() {
-    var {id, universities, imagesRef} = this.props;
-    var data = universities[id];
-
+    var {id, universities, imagesRef, data} = this.props;
     if (data.Picture !== "") {
       var imageRef = imagesRef.child(data.Picture);
       
       imageRef.getDownloadURL()
-      .then(url => {
-        console.log(url);
-        this.setState({Picture: url});
-      })
+      .then(url => this.setState({Picture: url}))
       .catch(e => console.error(e))
     }
   }
 
 
   render() {
-    var {faculties, id, universities, closeModal, changeView} = this.props;
-    var data = universities[id];
+    var {faculties, closeModal, changeView, data} = this.props;
     var {Desc, Faculties, Name, ShortName, Website, IGP, Courses, Scholarships, Admissions, Prerequisites} = data;
 
     // title
@@ -158,17 +154,13 @@ class UniversityInfo extends Component {
     }
 
     // faculties
-    var facultiesList = [];
-    for (let facName in Faculties) {
-      let id = Faculties[facName];
-      facultiesList.push(
-        <ListItem
+    var facultiesList = faculties.map(({name, id}) => {
+        return (<ListItem
           button onPress={()=>changeView(id)}
           key={id}>
-          <Text>{facName}</Text>
-        </ListItem>
-      );
-    }
+          <Text>{name}</Text>
+        </ListItem>)
+    })
     var faculties = (
       <View>
         <Text>Faculties</Text>
@@ -189,8 +181,7 @@ class UniversityInfo extends Component {
 
 class FacultyInfo extends Component {
   render() {
-    var {map, faculties, id, universities, closeModal, openMap} = this.props;
-    var data = faculties[id];
+    var {map, id, data, universities, closeModal, openMap} = this.props;
     var {Name, University, Website, Courses} = data;
 
     // title

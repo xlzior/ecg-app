@@ -30,7 +30,6 @@ export default class QuestionBank extends Component {
       if (keys.indexOf("QuestionBank/Questions") == -1) {
         AsyncStorage.setItem("QuestionBank/Questions", " ")
       }
-      
       if (keys.indexOf("QuestionBank/Notes") == -1) {
         AsyncStorage.setItem("QuestionBank/Notes", " ")
       } else {
@@ -38,10 +37,11 @@ export default class QuestionBank extends Component {
         AsyncStorage.getItem("QuestionBank/Notes")
         .then(data => JSON.parse(data))
         .then(allNotes => this.setState({ allNotes }))
+        .catch(e => console.error("Error getting notes", e))
       }
     })
     .then(()=>this.addNewQuestion())
-    .catch(e => console.error(e));
+    .catch(e => console.error("Error rendering question bank", e));
   }
 
   static getDerivedStateFromProps(props) {

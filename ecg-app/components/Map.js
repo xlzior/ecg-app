@@ -51,7 +51,7 @@ export default class MapView extends Component {
       locations[index].height = 1080;
       this.setState({locations})
     })
-    .catch(e => console.error(e));
+    .catch(e => console.error("Error getting map URLs", e));
   }
 
   componentDidMount() {
@@ -129,7 +129,6 @@ export default class MapView extends Component {
     // generate university list by filtering for unis in the selected location
     var filteredUnis = [];
     if (universities && universities.length > 0) {
-      var {universities} = this.state;
       universities.forEach(uni => {
         var filteredFacs = uni.faculties.filter(fac => {
           var boothIds = locations.find(l => l.name == location).boothIds;
@@ -163,7 +162,8 @@ export default class MapView extends Component {
           </Picker>
           {imageDisplay}
           <UniversityList
-            universities={filteredUnis}
+            universities={universities}
+            filteredUnis={filteredUnis}
             FBmap={FBmap}
             FBuniversity={FBuniversity}
             FBfaculty={FBfaculty}
