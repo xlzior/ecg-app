@@ -45,20 +45,20 @@ export default class Form extends Component {
     return (
       <Container style={{ flex: 1 }}>
         <Header>
-        <Left>
         {this.state.view !== "main" &&
-          <Button transparent>
-            <Icon
-              name="arrow-back"
-              onPress={()=>this.setView("main")}
-            />
-          </Button>
+          <Left>
+            <Button transparent>
+              <Icon
+                name="arrow-back"
+                onPress={()=>this.setView("main")}
+              />
+            </Button>
+          </Left>
         }
-        </Left>
         <Body>
           <Title>{this.state.title}</Title>
         </Body>
-        <Right />
+        {this.state.view !== "main" && <Right />}
         </Header>
         {this.getView()}
       </Container>

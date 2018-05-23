@@ -205,7 +205,7 @@ export default class QuestionBank extends Component {
     }
     var listDisplay = [];
     for (let section in questionsList) {
-      var iconName = showSection[section] ? "ios-arrow-up" : "ios-arrow-down";
+      var iconName = showSection[section] ? "ios-arrow-down" : "ios-arrow-back";
       // section header
       listDisplay.push(
         <ListItem

@@ -44,20 +44,21 @@ export default class About extends Component {
     return (
       <Container>
         <Header>
-          <Left>
-          {this.state.view !== "main" &&
-            <Button transparent>
-              <Icon
-                name="arrow-back"
-                onPress={()=>this.setView("main")}
-              />
-            </Button>
+          {
+            this.state.view !== "main" &&
+            <Left>
+              <Button transparent>
+                <Icon
+                  name="arrow-back"
+                  onPress={()=>this.setView("main")}
+                />
+              </Button>
+            </Left>
           }
-          </Left>
           <Body>
             <Title>{this.state.title}</Title>
           </Body>
-          <Right />
+          {this.state.view !== "main" && <Right />}
         </Header>
         {this.getView()}
       </Container>

@@ -41,7 +41,7 @@ export default class App extends Component {
   listenForItems(datastoreRef) {
     datastoreRef.once("value", datastore => {
       datastore.forEach(element => {
-        this.storeAsync(element.key, element.val())
+        this.storeAsync(element.key, element.val());
       });
 
       var last_update = JSON.stringify(new Date().toISOString());
@@ -54,7 +54,7 @@ export default class App extends Component {
     let faculty = this.state.asyncStorage["Faculty"];
     let uni = this.state.asyncStorage["University"];
     let universities;
-
+  
     if (key == "University" && faculty) {
       universities = this.flattenUnis(value, faculty);
     } else if (key == "Faculty" && uni) {
@@ -93,17 +93,17 @@ export default class App extends Component {
         faculties: []
       }
     }
-
+    
     // Fill up faculties
     for (let entry in faculty) {
-      const university = faculty[entry].University
+      const university = faculty[entry].University;
       universities[university].faculties.push({
         id: entry,
         name: faculty[entry].Name,
         details: faculty[entry]
       });
     }
-
+    
     // Flatten it
     var universitiesFlat = [];
     for (let entry in universities) {
@@ -139,10 +139,11 @@ export default class App extends Component {
 
   render() {
     if (!this.state.fontLoaded) return <View style={styles.center}><Text>Loading...</Text></View>
+    var {universities, mapLocation, asyncStorage, selectedTab, fontLoaded, last_update} = this.state;
     return (
       <TabNavigator>
         <TabNavigator.Item
-          selected={this.state.selectedTab === "map"}
+          selected={selectedTab === "map"}
           title="Map"
           renderIcon={() => <Feather name="map" size={20}/>}
           renderSelectedIcon={() => <Feather name="map" color="blue" size={20}/>}
@@ -150,43 +151,43 @@ export default class App extends Component {
         >
           <MapView
             imagesRef={this.imagesRef}
-            universities={this.state.universities}
-            location={this.state.mapLocation}
-            FBmap={this.state.asyncStorage["Map"]}
-            FBuniversity={this.state.asyncStorage["University"]}
-            FBfaculty={this.state.asyncStorage["Faculty"]}
+            universities={universities}
+            location={mapLocation}
+            FBmap={asyncStorage["Map"]}
+            FBuniversity={asyncStorage["University"]}
+            FBfaculty={asyncStorage["Faculty"]}
             openMap={l=>this.openMap(l)}
           />
         </TabNavigator.Item>
         <TabNavigator.Item
-          selected={this.state.selectedTab === "university-list"}
+          selected={selectedTab === "university-list"}
           title="Booths"
           renderIcon={() => <Entypo name="shop" size={20}/>}
           renderSelectedIcon={() => <Entypo name="shop" color="blue" size={20}/>}
           onPress={() => this.setState({ selectedTab: "university-list" })}
         >
           <UniversityListContainer
-            universities={this.state.universities}
-            FBmap={this.state.asyncStorage["Map"]}
-            FBuniversity={this.state.asyncStorage["University"]}
-            FBfaculty={this.state.asyncStorage["Faculty"]}
+            universities={universities}
+            FBmap={asyncStorage["Map"]}
+            FBuniversity={asyncStorage["University"]}
+            FBfaculty={asyncStorage["Faculty"]}
             imagesRef={this.imagesRef}
             openMap={l=>this.openMap(l)}
           />
         </TabNavigator.Item>
         <TabNavigator.Item
-          selected={this.state.selectedTab === "question-bank"}
+          selected={selectedTab === "question-bank"}
           title="Questions"
           renderIcon={() => <FontAwesome name="question-circle" size={20}/>}
           renderSelectedIcon={() => <FontAwesome name="question-circle" color="blue" size={20}/>}
           onPress={() => this.setState({ selectedTab: "question-bank" })}
         >
           <QuestionBank
-            FBquestionBank={this.state.asyncStorage["QuestionBank"]}
+            FBquestionBank={asyncStorage["QuestionBank"]}
           />
         </TabNavigator.Item>
         <TabNavigator.Item
-          selected={this.state.selectedTab === "forms"}
+          selected={selectedTab === "forms"}
           title="Forms"
           renderIcon={() => <FontAwesome name="wpforms" size={20}/>}
           renderSelectedIcon={() => <FontAwesome name="wpforms" color="blue" size={20}/>}
@@ -195,15 +196,15 @@ export default class App extends Component {
           <Form />
         </TabNavigator.Item>
         <TabNavigator.Item
-          selected={this.state.selectedTab === "about"}
+          selected={selectedTab === "about"}
           title="About"
           renderIcon={() => <Feather name="info" size={20}/>}
           renderSelectedIcon={() => <Feather name="info" color="blue" size={20}/>}
           onPress={() => this.setState({ selectedTab: "about" })}
         >
           <About
-            FBfaqs={this.state.asyncStorage["FAQ"]}
-            last_update={this.state.last_update}
+            FBfaqs={asyncStorage["FAQ"]}
+            last_update={last_update}
           />
         </TabNavigator.Item>
       </TabNavigator>

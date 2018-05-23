@@ -1,6 +1,6 @@
 import React, { Component } from "react";
-import { View } from "react-native";
-import { Text, Title, List, ListItem } from "native-base";
+import { View, StyleSheet } from "react-native";
+import { Text, Title, List, ListItem, Icon } from "native-base";
 
 import BoothInfo from "./BoothInfo";
 
@@ -51,25 +51,46 @@ export default class UniversityList extends Component {
 }
 
 class UniversitySection extends Component {
+  constructor() {
+    super();
+    this.state = {
+      showUni: true
+    }
+  }
+
+  toggleShow() {
+    console.log("toggle")
+    this.setState({showUni: !this.state.showUni})
+  }
+
   render() {
     var {id, name, faculties} = this.props.university;
+    var iconName = this.state.showUni ? "ios-arrow-down" : "ios-arrow-back";
+
+    // university section faculties
+    var faculties = faculties.map((faculty) => {
+      return <Faculty
+        key={faculty.id}
+        name={faculty.name}
+        openModal={()=>this.props.openModal(faculty.id)}
+      />
+    })
+
     return (
       <List>
         <ListItem
-          itemDivider button
-          onPress={()=>this.props.openModal(id)}
+          itemDivider
+          style={styles.rightIcon}
+          button onPress={()=>this.props.openModal(id)}
         >
           <Text>{name}</Text>
+          <Icon
+            name={iconName}
+            style={styles.icon}
+            button onPress={()=>this.toggleShow()}
+          />
         </ListItem>
-        {
-          faculties.map((faculty) => {
-            return <Faculty
-              key={faculty.id}
-              name={faculty.name}
-              openModal={()=>this.props.openModal(faculty.id)}
-            />
-          })
-        }
+        {this.state.showUni && faculties}
       </List>
     )
   }
@@ -86,3 +107,13 @@ class Faculty extends Component {
     )
   }
 }
+
+const styles = StyleSheet.create({
+  rightIcon: {
+    flexDirection: "row",
+    justifyContent: "space-between"
+  },
+  icon: {
+    color: "grey"
+  }
+});
