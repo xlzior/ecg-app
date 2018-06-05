@@ -1,92 +1,156 @@
 import React, { Component } from "react";
-import { Platform, AsyncStorage, Linking } from "react-native";
-import { Header, Left, Body, Right, Title, Icon } from "native-base"
-import { Container, Content, Button, Text, Card, CardItem } from "native-base"
+import { Platform, AsyncStorage, Linking, StyleSheet } from "react-native";
+import { Header, Left, Body, Right, Title, Icon, Container, Content, Button, Text, Card, CardItem, View } from "native-base"
+import Hyperlink from "react-native-hyperlink";
 import { AppInstalledChecker } from 'react-native-check-app-install';
 import Moment from "react-moment"
 import { FontAwesome } from "@expo/vector-icons";
 
 console.disableYellowBox = true;
 
-const titles = {
-  main: "About",
-  faq: "FAQ"
-};
-
 export default class About extends Component {
 
-  constructor() {
-    super();
-    this.state = {
-      view: "main", // faq, main
-      title: "About"
-    };
-  }
-
-  setView(view) {
-    this.setState({ view: view, title: titles[view] });
-  }
-
-  getView() {
-    if (this.state.view === "main")
-      return <Main
-                setView={(view) => this.setView(view)}
-                last_update={this.props.last_update}
-              />
-    else if (this.state.view === "faq")
-      return <FAQ
-                setView={(view) => this.setView(view)}
-                {...this.props}
-              />
-  }
-
   render() {
+
     return (
       <Container>
         <Header>
-          {
-            this.state.view !== "main" &&
-            <Left>
-              <Button transparent>
-                <Icon
-                  name="arrow-back"
-                  onPress={()=>this.setView("main")}
-                />
-              </Button>
-            </Left>
-          }
           <Body>
-            <Title>{this.state.title}</Title>
+            <Title>FAQ</Title>
           </Body>
-          {this.state.view !== "main" && <Right />}
         </Header>
-        {this.getView()}
+        <Content>
+          <FAQ
+            setView={(view) => this.setView(view)}
+            {...this.props}
+          />
+          <UpdateButton
+            last_update={this.props.last_update}
+            pullData={()=>this.props.pullData()}
+          />
+        </Content>
       </Container>
     )
   }
 }
 
-class Main extends Component {
-
+class FAQ extends Component {
   constructor() {
     super();
     this.state = {
-      last_update: "",
-      instagram_url: "https://www.instagram.com/hciecg/"
+      studentFAQs: [],
+      uniRepFAQs: [],
+      showSection: {
+        student: true,
+        university: true,
+      }
     };
   }
 
   static getDerivedStateFromProps(props) {
-    var last_update = props.last_update;
-    if (last_update)
-        last_update = JSON.parse(last_update)
-    return { last_update: last_update };
+    const FAQs = props.FBfaqs;
+    let studentFAQs = [], uniRepFAQs = [];
+    for (let entryId in FAQs) {
+      let question = {
+        id: entryId,
+        question: FAQs[entryId].Question,
+        answer: FAQs[entryId].Answer
+      };
+      if (entryId.indexOf("FAQ-U") != -1) uniRepFAQs.push(question);
+      else studentFAQs.push(question);
+    }
+
+    return {studentFAQs, uniRepFAQs};
+  }
+
+  hideSection(section) {
+    let showSection = this.state.showSection;
+    showSection[section] = false;
+    this.setState({showSection});
+  }
+
+  showSection(section) {
+    let showSection = this.state.showSection;
+    for (let key in showSection) showSection[key] = false; // hide all other sections
+    showSection[section] = true;
+    this.setState({showSection});
+  }
+
+  generateDisplay(type, FAQs, show) {
+    let display = [], iconName, fn, header;
+    if (show) {
+      iconName = "ios-arrow-down";
+      fn = () => this.hideSection(type);
+    } else {
+      iconName = "ios-arrow-back";
+      fn = () => this.showSection(type);
+    }
+
+    if (type == "student") header = "Student FAQs";
+    else if (type == "university") header = "University Representative FAQs";
+
+    display.push(
+      <CardItem header bordered
+        style={styles.rightIcon}
+        button onPress={fn}
+        key={display.length}
+      >
+        <Text>{header}</Text>
+        <Icon name={iconName} style={styles.icon}/>
+      </CardItem>
+    )
+    let questionsDisplay = FAQs.map(entry => {
+      let answerDisplay = (
+        <Hyperlink
+          linkDefault
+          linkStyle={{color: "#2980b9"}}
+          linkText={ url => url == "https://sites.google.com/hci.edu.sg/hciecg/home" ? "the ECG Google Site" : url}
+        >
+          <Text>A: {entry.answer}</Text>
+        </Hyperlink>
+      );
+      if (entry.answer == "instagram") answerDisplay = <InstagramButton />
+      return (
+        <CardItem bordered key={entry.id}>
+          <Body>
+            <Text style={{fontWeight: "bold"}}>Q: {entry.question}</Text>
+            {answerDisplay}
+          </Body>
+        </CardItem>
+      )
+    })
+
+    if (show) display.push(questionsDisplay)
+    return display;
+  }
+
+  render() {
+    let {studentFAQs, uniRepFAQs, showSection} = this.state;
+    let studentFAQDisplay = this.generateDisplay("student", studentFAQs, showSection.student);
+    let uniRepFAQDisplay = this.generateDisplay("university", uniRepFAQs, showSection.university);
+
+    return (
+      <View style={styles.sectionMargin}>
+        <Card>{studentFAQDisplay}</Card>
+        <Card>{uniRepFAQDisplay}</Card>
+      </View>
+    )
+  }
+}
+
+class InstagramButton extends Component {
+
+  constructor() {
+    super();
+    this.state = {
+      instagram_url: "https://www.instagram.com/hciecg/"
+    };
   }
 
   async componentDidMount() {
     isInstalled = await AppInstalledChecker.checkURLScheme("instagram");
     if (isInstalled) {
-      var url = "";
+      let url = "";
 
       if (Platform.OS === "ios")
         url = "instagram://user?username=hciecg";
@@ -102,73 +166,65 @@ class Main extends Component {
 
   render() {
     return (
-      <Content>
-        <Button block info onPress={()=>this.props.setView("faq")}>
-          <Text>FAQ</Text>
-        </Button>
-        <Button block info onPress={()=>Linking.openURL(this.state.instagram_url)}>
-          <FontAwesome name="instagram" color="white" size={20}/><Text>Instagram</Text>
-        </Button>
-        <Text>
-          Last Updated: <Moment element={Text} fromNow>{this.state.last_update}</Moment>
-        </Text>
-      </Content>
+      <Button block info onPress={()=>Linking.openURL(this.state.instagram_url)}
+        style={styles.margins}
+      >
+        <FontAwesome name="instagram" color="white" size={20}/>
+        <Text>Instagram</Text>
+      </Button>
     )
   }
 }
 
-class FAQ extends Component {
+class UpdateButton extends Component {
+
   constructor() {
     super();
     this.state = {
-      questions: []
+      last_update: "",
     };
   }
 
-  async componentDidMount() {
-    const FAQs = this.props.FBfaqs;
-    var questions = [];
-    for (let entry in FAQs) {
-      questions.push({
-        id: entry,
-        question: FAQs[entry].Question,
-        answer: FAQs[entry].Answer
-      });
-    }
-
-    this.setState({
-      questions: questions
-    });
+  static getDerivedStateFromProps(props) {
+    let last_update = props.last_update;
+    if (last_update) last_update = JSON.parse(last_update)
+    return { last_update: last_update };
   }
 
   render() {
     return (
-      <Content>
-        {
-          this.state.questions.map((entry) => {
-            return <FAQrow
-              key={entry.id}
-              question={entry.question}
-              answer={entry.answer}
-            />
-          })
-        }
-      </Content>
+      <View style={styles.lastItem}>
+        <Text style={styles.margins}>App glitching or data outdated? Click to download the data again.</Text>
+        <Button block info onPress={()=>this.props.pullData()}
+          style={styles.margins}
+        >
+          <FontAwesome name="download" color="white" size={20}/>
+          <Text>Refresh</Text>
+        </Button>
+        <Text style={styles.margins}>
+          Last updated: <Moment element={Text} fromNow>{this.state.last_update}</Moment>
+        </Text>
+      </View>
     )
   }
 }
 
-class FAQrow extends Component {
-  render() {
-    return (
-      <Card>
-        <CardItem>
-          <Body>
-            <Text>Q: {this.props.question}</Text>
-            <Text>A: {this.props.answer}</Text>
-          </Body>
-        </CardItem>
-      </Card>
-    )
+const styles = StyleSheet.create({
+  rightIcon: {
+    flexDirection: "row",
+    justifyContent: "space-between"
+  },
+  icon: {
+    color: "grey"
+  },
+  margins: {
+    margin: 10,
+    marginBottom: 0
+  },
+  sectionMargin: {
+    marginBottom: 20
+  },
+  lastItem: {
+    marginBottom: 100
   }
-}
+});

@@ -27,7 +27,7 @@ export default class UniversityList extends Component {
   }
 
   render() {
-    var unisToDisplay = this.props.universities
+    let unisToDisplay = this.props.universities
     if (this.props.filteredUnis) unisToDisplay = this.props.filteredUnis;
 
     return (
@@ -38,6 +38,7 @@ export default class UniversityList extends Component {
               key={university.id}
               university={university}
               openModal={(i)=>this.openModal(i)}
+              show={this.props.show}
             />
           })
         }
@@ -54,11 +55,19 @@ export default class UniversityList extends Component {
 }
 
 class UniversitySection extends Component {
-  constructor() {
-    super();
-    this.state = {
-      showUni: true
-    }
+  constructor(props) {
+    super(props);
+    this.state = { showUni: false }
+  }
+
+  componentDidMount() {
+    this.setState({ showUni: this.props.show })
+  }
+
+  static getDerivedStateFromProps(props, state) {
+    // props can only open the section but cannot close it
+    if (props.show && !state.showUni) return { showUni: true }
+    else return {}
   }
 
   toggleShow() {
@@ -66,11 +75,11 @@ class UniversitySection extends Component {
   }
 
   render() {
-    var {id, name, faculties} = this.props.university;
-    var iconName = this.state.showUni ? "ios-arrow-down" : "ios-arrow-back";
+    let {id, name, faculties} = this.props.university;
+    let iconName = this.state.showUni ? "ios-arrow-down" : "ios-arrow-back";
 
     // university section faculties
-    var faculties = faculties.map((faculty) => {
+    let facultiesDisplay = faculties.map((faculty) => {
       return <Faculty
         key={faculty.id}
         name={faculty.name}
@@ -92,7 +101,7 @@ class UniversitySection extends Component {
             button onPress={()=>this.toggleShow()}
           />
         </ListItem>
-        {this.state.showUni && faculties}
+        {this.state.showUni && facultiesDisplay}
       </List>
     )
   }
@@ -100,7 +109,7 @@ class UniversitySection extends Component {
 
 class Faculty extends Component {
   render() {
-    var {name, openModal} = this.props;
+    let {name, openModal} = this.props;
     
     return (
       <ListItem button onPress={()=>openModal()}>

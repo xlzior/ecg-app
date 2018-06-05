@@ -1,9 +1,10 @@
 import React, { Component } from "react";
-import { StyleSheet, View, ScrollView, Modal, TouchableOpacity, Image } from "react-native";
+import { StyleSheet, View, ScrollView, Modal, TouchableOpacity, Image, Dimensions } from "react-native";
 import { Button, Icon, Text, List, ListItem } from "native-base";
 import Hyperlink from "react-native-hyperlink";
 
 import UniversityList from "./UniversityList";
+const screenWidth = Dimensions.get("window").width;
 
 export default class BoothInfo extends Component {
   constructor(props) {
@@ -30,12 +31,13 @@ export default class BoothInfo extends Component {
   }
 
   render() {
-    var {isModalShown, closeModal, openMap, imagesRef} = this.props;
-    var universitiesFlat = this.props.universities;
+    let {isModalShown, closeModal, openMap, imagesRef} = this.props;
+    let universitiesFlat = this.props.universities;
 
-    var {id, map, universities, faculties} = this.state;
+    let {id, map, universities, faculties} = this.state;
+    let display;
     if (id.indexOf("F") != -1) {
-      var display = (
+      display = (
         <FacultyInfo
           map={map}
           universities={universities}
@@ -47,8 +49,8 @@ export default class BoothInfo extends Component {
         />
       )
     } else if (id.indexOf("U") != -1) {
-      var facultiesFlat = universitiesFlat.find(e => e.id == id).faculties;
-      var display = (
+      facultiesFlat = universitiesFlat.find(e => e.id == id).faculties;
+      display = (
         <UniversityInfo
           map={map}
           data={universities[id]}
@@ -59,7 +61,7 @@ export default class BoothInfo extends Component {
       )
     }
 
-    var closeButton = (
+    let closeButton = (
       <Button
         small transparent dark
         onPress={()=>closeModal()}
@@ -87,39 +89,56 @@ class UniversityInfo extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      Picture: ""
+      Picture: "",
+      height: 100,
+      width: 100
     }
   }
 
   componentDidMount() {
-    var {id, universities, imagesRef, data} = this.props;
+    let {id, universities, imagesRef, data} = this.props;
     if (data.Picture !== "") {
-      var imageRef = imagesRef.child(data.Picture);
-      
+      let imageRef = imagesRef.child(data.Picture);
       imageRef.getDownloadURL()
-      .then(url => this.setState({Picture: url}))
+      .then(url => {
+        Image.getSize(url, (width, height) => {this.setState({width, height})});
+        this.setState({Picture: url});
+      })
       .catch(e => console.error(e))
     }
   }
 
 
   render() {
-    var {faculties, closeModal, changeView, data} = this.props;
-    var {Desc, Faculties, Name, ShortName, Website, IGP, Courses, Scholarships, Admissions, Prerequisites} = data;
+    let {faculties, closeModal, changeView, data} = this.props;
+    let {Faculties, Name, ShortName, Website, IGP, Courses, Scholarships, Admissions, Prerequisites} = data;
+    let {Picture, height, width} = this.state;
 
     // title
-    var title = <Text style={[styles.header, styles.marginBottom]}>{Name} ({ShortName})</Text>;
+    let title = <Text style={[styles.header, styles.marginBottom]}>{Name} ({ShortName})</Text>;
 
     // picture
-    var image = this.state.Picture ? (
-      <Image
-        style={[styles.image, styles.marginBottom]}
-        source={{uri: this.state.Picture}}
-      />
-    ) : null;
+    let image;
+    let imageSize = {
+      width: screenWidth - 40,
+      minHeight: 100,
+      height: height * (screenWidth - 40) / width
+    }
+    
+    if (Picture) {
+      image = (
+        <View style={styles.row}>
+          <Image
+            style={[styles.marginBottom, imageSize]}
+            resizeMode="cover"
+            source={{uri: Picture}}
+          />
+        </View>
+      );
+    } 
 
     // website
-    var website = Website ? (
+    let website = Website ? (
       <Hyperlink
         linkDefault={true}
         linkStyle={styles.link}
@@ -130,8 +149,8 @@ class UniversityInfo extends Component {
     ) : null;
 
     // links
-    var linksDisplay = []
-    var links = {
+    let linksDisplay = []
+    let links = {
       "IGP": IGP,
       "Courses": Courses,
       "Scholarships": Scholarships,
@@ -154,14 +173,14 @@ class UniversityInfo extends Component {
     }
 
     // faculties
-    var facultiesList = faculties.map(({name, id}) => {
+    let facultiesList = faculties.map(({name, id}) => {
         return (<ListItem
           button onPress={()=>changeView(id)}
           key={id}>
           <Text>{name}</Text>
         </ListItem>)
     })
-    var faculties = (
+    let facultiesDisplay = (
       <View>
         <Text>Faculties</Text>
         {facultiesList}
@@ -173,7 +192,7 @@ class UniversityInfo extends Component {
         {title}
         {image}
         {linksDisplay}
-        <List>{faculties}</List>
+        <List>{facultiesDisplay}</List>
       </ScrollView>
     )
   }
@@ -181,12 +200,12 @@ class UniversityInfo extends Component {
 
 class FacultyInfo extends Component {
   render() {
-    var {map, id, data, universities, closeModal, openMap} = this.props;
-    var {Name, University, Website, Courses} = data;
+    let {map, id, data, universities, closeModal, openMap} = this.props;
+    let {Name, University, Website, Courses} = data;
 
     // title
     University = universities[University].ShortName;
-    var title = (
+    let title = (
       <View>
         <Text style={styles.header}>{University}</Text>
         <Text style={[styles.header, styles.marginBottom]}>{Name}</Text>
@@ -194,7 +213,7 @@ class FacultyInfo extends Component {
     )
 
     // website
-    var website = Website ? (
+    let website = Website ? (
       <Hyperlink
         linkDefault={true}
         linkStyle={styles.link}
@@ -205,31 +224,34 @@ class FacultyInfo extends Component {
     ) : null;
 
     // location
+    let boothLocation = "-";
     for (let location in map) {
       for (let uni in map[location]) {
         if (map[location][uni].indexOf(id) != -1) {
-          var locationDisplay = (
-            <View>
-              <Text style={styles.marginBottom}>
-                Booth Location: {location}
-              </Text>
-              <Button
-                onPress={()=>{
-                  openMap(location);
-                  closeModal();
-                }}
-                style={styles.marginBottom}
-              >
-                <Text>Go to map</Text>
-              </Button>
-            </View>
-          )
+          boothLocation = location;
         }
       }
     }
 
+    let locationDisplay = (
+      <View>
+        <Text style={styles.marginBottom}>
+          Booth Location: {boothLocation}
+        </Text>
+        {boothLocation != "-" && <Button
+          onPress={()=>{
+            openMap(boothLocation);
+            closeModal();
+          }}
+          style={styles.marginBottom}
+        >
+          <Text>Go to map</Text>
+        </Button>}
+      </View>
+    )
+
     // courses for faculties which have interesting programmes
-    var coursesList = []
+    let coursesList = []
     for (let key in Courses) {
       coursesList.push(
         <Hyperlink
@@ -244,7 +266,7 @@ class FacultyInfo extends Component {
       )
     }
 
-    var courses = Courses ? (
+    let courses = Courses ? (
       <View>
         <Text style={styles.marginBottom}>Programmes</Text>
         <List>{coursesList}</List>
@@ -270,8 +292,9 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: "bold"
   },
-  image: {
-    height: 100,
+  row: {
+    flex: 1,
+    flexDirection: "row"
   },
   closeButton: {
     alignSelf: "flex-end",
@@ -287,3 +310,9 @@ const styles = StyleSheet.create({
     color: "#2980b9"
   }
 });
+
+// old image styles
+// minHeight: 100,
+// maxHeight: 500,
+// minWidth: 300,
+// maxWidth: screenWidth

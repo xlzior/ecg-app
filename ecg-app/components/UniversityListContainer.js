@@ -84,6 +84,7 @@ export default class UniversityListContainer extends Component {
             FBmap={FBmap}
             imagesRef={imagesRef}
             openMap={l=>openMap(l)}
+            show={this.state.searchTerm != ""}
           />
         </Content>
       </Container>

@@ -37,7 +37,7 @@ export default class QuestionBank extends Component {
         AsyncStorage.getItem("QuestionBank/Notes")
         .then(data => JSON.parse(data))
         .then(allNotes => this.setState({ allNotes }))
-        .catch(e => console.error("Error getting notes", e))
+        .catch(e => this.setState({ allNotes: {} }))
       }
     })
     .then(()=>this.addNewQuestion())

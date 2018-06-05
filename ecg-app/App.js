@@ -39,12 +39,13 @@ export default class App extends Component {
   }
 
   listenForItems(datastoreRef) {
+    console.log("fetching from firebase...")
     datastoreRef.once("value", datastore => {
       datastore.forEach(element => {
         this.storeAsync(element.key, element.val());
       });
 
-      var last_update = JSON.stringify(new Date().toISOString());
+      let last_update = JSON.stringify(new Date().toISOString());
       this.setState({last_update})
       AsyncStorage.setItem("last_update", last_update);
     });
@@ -78,12 +79,14 @@ export default class App extends Component {
   fetchAsync() {
     AsyncStorage.getItem("last_update")
     .then(last_update => {
-      var oneWeekAgo = new Date();
-      oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
-      oneWeekAgo = JSON.stringify(oneWeekAgo.toISOString())
+      this.setState({last_update})
+      
+      let outdated = new Date();
+      outdated.setDate(outdated.getDate() - 4);
+      outdated = JSON.stringify(outdated.toISOString())
 
-      // update database only if last update was more than a week ago
-      if (last_update == null || last_update < oneWeekAgo) this.listenForItems(this.datastoreRef);
+      // update database only if last update was more than 4 days ago
+      if (last_update == null || last_update < outdated) this.listenForItems(this.datastoreRef);
       else {
         console.log("retrieving from AsyncStorage...")
         // if the async storage is still up to date, retrieve data and set it to state
@@ -123,7 +126,7 @@ export default class App extends Component {
   }
 
   flattenUnis(uni, faculty) {
-    var universities = {};
+    let universities = {};
     // Populate universities
     for (let entry in uni) {
       universities[entry] = {
@@ -143,7 +146,7 @@ export default class App extends Component {
     }
     
     // Flatten it
-    var universitiesFlat = [];
+    let universitiesFlat = [];
     for (let entry in universities) {
       universitiesFlat.push({
         id: entry,
@@ -155,7 +158,10 @@ export default class App extends Component {
   }
 
   async componentDidMount() {
-    Font.loadAsync({"Roboto_medium": require("./components/assets/Roboto_medium.ttf")})
+    Expo.Font.loadAsync({
+      'Roboto': require('native-base/Fonts/Roboto.ttf'),
+      'Roboto_medium': require('native-base/Fonts/Roboto_medium.ttf'),
+    })
     .then(() => this.setState({ fontLoaded: true }))
     .catch(() => this.setState({ fontLoaded: true }));
     
@@ -171,7 +177,7 @@ export default class App extends Component {
 
   render() {
     if (!this.state.fontLoaded) return <View style={styles.center}><Text>Loading...</Text></View>
-    var {universities, mapLocation, asyncStorage, selectedTab, fontLoaded, last_update} = this.state;
+    let {universities, mapLocation, asyncStorage, selectedTab, fontLoaded, last_update} = this.state;
     return (
       <TabNavigator>
         <TabNavigator.Item
@@ -228,15 +234,16 @@ export default class App extends Component {
           <Form />
         </TabNavigator.Item>
         <TabNavigator.Item
-          selected={selectedTab === "about"}
-          title="About"
+          selected={selectedTab === "faq"}
+          title="FAQ"
           renderIcon={() => <Feather name="info" size={20}/>}
           renderSelectedIcon={() => <Feather name="info" color="blue" size={20}/>}
-          onPress={() => this.setState({ selectedTab: "about" })}
+          onPress={() => this.setState({ selectedTab: "faq" })}
         >
           <About
             FBfaqs={asyncStorage["FAQ"]}
             last_update={last_update}
+            pullData={()=>this.listenForItems(this.datastoreRef)}
           />
         </TabNavigator.Item>
       </TabNavigator>

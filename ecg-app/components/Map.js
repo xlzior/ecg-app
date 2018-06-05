@@ -169,6 +169,7 @@ export default class MapView extends Component {
             FBfaculty={FBfaculty}
             imagesRef={imagesRef}
             openMap={l=>openMap(l)}
+            show={true}
           />
         </Content>
       </Container>

@@ -1,2 +1,0 @@
-This website demostrates the built-in method to open a website. An external app can also be opened in the same way.
-https://stackoverflow.com/questions/43804032/react-native-open-url-in-default-web-browser?utm_medium=organic&utm_source=google_rich_qa&utm_campaign=google_rich_qa
