@@ -1,10 +1,9 @@
 import React, { Component } from "react";
-import { StyleSheet, Text, View, TouchableOpacity, AsyncStorage } from "react-native";
-import { Font } from "expo";
+import { StyleSheet, Text, View, AsyncStorage } from "react-native";
 
 // TabNavigator
 import TabNavigator from "react-native-tab-navigator";
-import { Feather, MaterialIcons, FontAwesome, Entypo } from "@expo/vector-icons";
+import { Feather, FontAwesome, Entypo } from "@expo/vector-icons";
 
 // Components
 import MapView from "./components/Map";
@@ -77,8 +76,9 @@ export default class App extends Component {
   }
 
   fetchAsync() {
-    AsyncStorage.getItem("last_update")
+    return AsyncStorage.getItem("last_update")
     .then(last_update => {
+      console.log('last_update: ', last_update);
       this.setState({last_update})
       
       let outdated = new Date();
@@ -108,14 +108,14 @@ export default class App extends Component {
               this.setState({asyncStorage, universities});
             })
             .catch(e => {
-              console.error(`Error retrieving ${key} from AsyncStorage`, e);
               this.listenForItems(this.datastoreRef);
+              console.error(`Error retrieving ${key} from AsyncStorage`, e);
             })
           }
         })
         .catch(e => {
-          console.error("Error getting keys from AsyncStorage", e);
           this.listenForItems(this.datastoreRef);
+          console.error("Error getting keys from AsyncStorage", e);
         })
       }
     })
@@ -164,8 +164,16 @@ export default class App extends Component {
     })
     .then(() => this.setState({ fontLoaded: true }))
     .catch(() => this.setState({ fontLoaded: true }));
-    
-    this.fetchAsync();
+
+    let fetchAsyncStorage = this.fetchAsync();
+    let timeout = new Promise ((resolve) => {
+      setTimeout(resolve, 5000, 'timeout');
+    })
+
+    Promise.race([fetchAsyncStorage, timeout])
+    .then(value => {
+      if (value == 'timeout') this.listenForItems(this.datastoreRef);
+    })
   }
 
   openMap(location) {

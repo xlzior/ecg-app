@@ -28,10 +28,10 @@ export default class QuestionBank extends Component {
     .then(keys => {
       // make sure AsyncStorage contains the key "QuestionBank/Questions" and "QuestionBank/Notes"
       if (keys.indexOf("QuestionBank/Questions") == -1) {
-        AsyncStorage.setItem("QuestionBank/Questions", " ")
+        AsyncStorage.setItem("QuestionBank/Questions", "")
       }
       if (keys.indexOf("QuestionBank/Notes") == -1) {
-        AsyncStorage.setItem("QuestionBank/Notes", " ")
+        AsyncStorage.setItem("QuestionBank/Notes", "")
       } else {
         // load the notes from async storage into state
         AsyncStorage.getItem("QuestionBank/Notes")

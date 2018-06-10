@@ -3,7 +3,6 @@ import { StyleSheet, View, ScrollView, Modal, TouchableOpacity, Image, Dimension
 import { Button, Icon, Text, List, ListItem } from "native-base";
 import Hyperlink from "react-native-hyperlink";
 
-import UniversityList from "./UniversityList";
 const screenWidth = Dimensions.get("window").width;
 
 export default class BoothInfo extends Component {
@@ -53,9 +52,12 @@ export default class BoothInfo extends Component {
       display = (
         <UniversityInfo
           map={map}
+          id={id}
           data={universities[id]}
           faculties={facultiesFlat}
           changeView={id=>this.changeView(id)}
+          closeModal={()=>closeModal()}
+          openMap={l=>openMap(l)}
           imagesRef={imagesRef}
         />
       )
@@ -89,14 +91,12 @@ class UniversityInfo extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      Picture: "",
-      height: 100,
-      width: 100
+      Picture: ""
     }
   }
 
   componentDidMount() {
-    let {id, universities, imagesRef, data} = this.props;
+    let {imagesRef, data} = this.props;
     if (data.Picture !== "") {
       let imageRef = imagesRef.child(data.Picture);
       imageRef.getDownloadURL()
@@ -104,15 +104,15 @@ class UniversityInfo extends Component {
         Image.getSize(url, (width, height) => {this.setState({width, height})});
         this.setState({Picture: url});
       })
-      .catch(e => console.error(e))
+      .catch(e => console.error("Error retrieving download URL from Firebase", e))
     }
   }
 
 
   render() {
-    let {faculties, closeModal, changeView, data} = this.props;
-    let {Faculties, Name, ShortName, Website, IGP, Courses, Scholarships, Admissions, Prerequisites} = data;
-    let {Picture, height, width} = this.state;
+    let {faculties, changeView, data, openMap, map, id, closeModal} = this.props;
+    let {Name, ShortName, Website, IGP, Courses, Scholarships, Admissions, Prerequisites} = data;
+    let {Picture} = this.state;
 
     // title
     let title = <Text style={[styles.header, styles.marginBottom]}>{Name} ({ShortName})</Text>;
@@ -121,8 +121,7 @@ class UniversityInfo extends Component {
     let image;
     let imageSize = {
       width: screenWidth - 40,
-      minHeight: 100,
-      height: height * (screenWidth - 40) / width
+      height: 1080 / 1920 * (screenWidth - 40)
     }
     
     if (Picture) {
@@ -147,6 +146,33 @@ class UniversityInfo extends Component {
         <Text>Website: {Website}</Text>
       </Hyperlink>
     ) : null;
+
+    // location
+    let boothLocation = "-";
+    for (let location in map) {
+      for (let uni in map[location]) {
+        if (map[location][uni].indexOf(id) != -1) {
+          boothLocation = location;
+        }
+      }
+    }
+
+    let locationDisplay = (
+      <View>
+        <Text style={styles.marginBottom}>
+          Booth Location: {boothLocation}
+        </Text>
+        {boothLocation != "-" && <Button
+          onPress={()=>{
+            openMap(boothLocation);
+            closeModal();
+          }}
+          style={styles.marginBottom}
+        >
+          <Text>Go to map</Text>
+        </Button>}
+      </View>
+    )
 
     // links
     let linksDisplay = []
@@ -191,6 +217,8 @@ class UniversityInfo extends Component {
       <ScrollView style={styles.container}>
         {title}
         {image}
+        {website}
+        {locationDisplay}
         {linksDisplay}
         <List>{facultiesDisplay}</List>
       </ScrollView>
@@ -204,10 +232,9 @@ class FacultyInfo extends Component {
     let {Name, University, Website, Courses} = data;
 
     // title
-    University = universities[University].ShortName;
     let title = (
       <View>
-        <Text style={styles.header}>{University}</Text>
+        <Text style={styles.header}>{universities[University].ShortName}</Text>
         <Text style={[styles.header, styles.marginBottom]}>{Name}</Text>
       </View>
     )
@@ -224,29 +251,46 @@ class FacultyInfo extends Component {
     ) : null;
 
     // location
-    let boothLocation = "-";
+    let boothLocation = "-", uniBoothLocation = "-";
     for (let location in map) {
-      for (let uni in map[location]) {
-        if (map[location][uni].indexOf(id) != -1) {
+      if (University in map[location]) {
+        if (map[location][University].indexOf(id) != -1) {
           boothLocation = location;
+        }
+        if (map[location][University].indexOf(University) != -1) {
+          uniBoothLocation = location;
         }
       }
     }
 
+    let boothLocationText = (
+      <Text style={styles.marginBottom}>
+        Booth Location: {boothLocation}
+      </Text>
+    )
+    let uniBoothText = (boothLocation == "-" && uniBoothLocation != "-") ? (
+      <Text style={styles.marginBottom}>
+        If you wish to find out more about this faculty, please visit their admissions booth located at the {uniBoothLocation}.
+      </Text>
+    ) : null;
+    let buttonLocation = boothLocation != "-" ? boothLocation : uniBoothLocation
+    let goToMapButton = buttonLocation != "-" ? (
+      <Button
+        onPress={()=>{
+          openMap(buttonLocation);
+          closeModal();
+        }}
+        style={styles.marginBottom}
+      >
+        <Text>Go to map</Text>
+      </Button>
+    ) : null;
+
     let locationDisplay = (
       <View>
-        <Text style={styles.marginBottom}>
-          Booth Location: {boothLocation}
-        </Text>
-        {boothLocation != "-" && <Button
-          onPress={()=>{
-            openMap(boothLocation);
-            closeModal();
-          }}
-          style={styles.marginBottom}
-        >
-          <Text>Go to map</Text>
-        </Button>}
+        {boothLocationText}
+        {uniBoothText}
+        {goToMapButton}
       </View>
     )
 

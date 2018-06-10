@@ -1,45 +1,61 @@
 import React, { Component } from "react";
-import { StyleSheet, View, Image, TouchableOpacity, Dimensions } from "react-native";
-import { Container, Content, Text, Header, Body, Title, Picker, List, ListItem, Icon } from "native-base";
+import { View, Image, TouchableOpacity, Dimensions } from "react-native";
+import { Container, Content, Text, Header, Body, Title, Picker, Icon } from "native-base";
 
 import ImageView from "react-native-image-view";
 import UniversityList from "./UniversityList";
 
-const {width} = Dimensions.get("window");
+const screenWidth = Dimensions.get("window").width;
 
 export default class MapView extends Component {
   constructor(props) {
     super(props);
-    // TODO: put this on firebase instead
     this.state = {
-      locations: [
-        {
-          id: "hall",
-          name: "Hall",
-          fileName: "hall.png"
-        },
-        {
-          id: "dl2",
-          name: "Block D Level 2",
-          fileName: "dl2.png"
-        },
-        {
-          id: "dl3",
-          name: "Block D Level 3",
-          fileName: "dl3.png"
-        },
-      ],
+      locations: [],
       location: "Hall",
       isImageOpen: false,
-      universities: []
+      universities: [],
     }
   }
 
-  getURL(e) {
-    // get image download URLs from firebase and store inside this.images
-    var imageRef = this.props.imagesRef.child(e.fileName);
-    var locations = this.state.locations.slice();
-    var index = locations.indexOf(e);
+  static getDerivedStateFromProps(props) {
+    let locations = [];
+    for (let locationName in props.FBmap) {
+      let index = locations.length;
+      let location = {
+        Name: locationName,
+        ...props.FBmap[locationName]
+      }
+      
+      locations.push(location)
+
+      // compile a list of boothIds in the location
+      let boothIds = [];
+      for (let uni in props.FBmap[locationName]) {
+        if (uni.indexOf('U') !== -1) {
+          let uniSection = [uni, ...props.FBmap[locationName][uni].split(", ")]
+          boothIds.push(...uniSection);
+        }
+      }
+
+      locations[index].boothIds = boothIds;
+    }
+    let state = {
+      universities: props.universities,
+      locations
+    };
+    if (props.location) state.location = props.location;
+    return state;
+  }
+
+  changeLocation(location) {
+    this.setState({location})
+  }
+
+  getURL(location, index) {
+    // get image download URLs from firebase and store inside location
+    let imageRef = this.props.imagesRef.child(location.FileName);
+    let locations = this.state.locations.slice();
 
     imageRef.getDownloadURL()
     .then(url => {
@@ -54,85 +70,53 @@ export default class MapView extends Component {
     .catch(e => console.error("Error getting map URLs", e));
   }
 
-  componentDidMount() {
-    // get URLs for all the locations
-    this.state.locations.forEach(e => this.getURL(e));
-  }
-
-  static getDerivedStateFromProps(props, state) {
-    var locations = state.locations.slice();
-    for (let locationName in props.FBmap) {
-      // for each location in the map
-      var location = state.locations.find(l => l.name == locationName);
-      var index = locations.indexOf(location);
-
-      // compile a list of boothIds in the location
-      var boothIds = []
-      for (let uni in props.FBmap[locationName]) {
-        var uniSection = [uni, ...props.FBmap[locationName][uni].split(", ")]
-        boothIds.push(...uniSection);
-      }
-
-      // add the info to the existing object called locations
-      locations[index].boothIds = boothIds;
+  componentDidUpdate() {
+    let {locations} = this.state;
+    // fetch image download URLs only if locations have been loaded but the images have not been downloaded
+    if (locations.length > 0 && !locations[0].source) {
+      locations.forEach((location, index) => this.getURL(location, index))
     }
-    if (props.location !== "") {
-      return {
-        universities: props.universities,
-        locations,
-        location: props.location
-      }
-    }
-    return {
-      universities: props.universities,
-      locations
-    }
-  }
-
-  changeLocation(location) {
-    this.setState({location})
   }
 
   render() {
-    var {universities, locations, location, isImageOpen} = this.state;
-    var {FBmap, FBuniversity, FBfaculty, imagesRef, openMap} = this.props;
+    let {universities, locations = [{}], location, isImageOpen} = this.state;
+    let {FBmap, FBuniversity, FBfaculty, imagesRef, openMap} = this.props;
+
     // generate map
-    var image = locations.find(e => e.name == location);
-    var imageIndex = locations.indexOf(image);
+    let image = locations.find(e => e.Name == location);
+    let imageIndex = locations.indexOf(image);
     
     if (image && image.source) { // image.source.uri might not exist if the download URL has not been fetched from firebase
       var imageDisplay = (
         <View>
           <TouchableOpacity onPress={()=>this.setState({isImageOpen: true})}>
             <Image
-              source={{
-                uri: image.source.uri,
-                cache: "force-cache"
-              }}
-              style={{height: 200, width}}
+            source={image.source}
+            style={{height: 1080 / 1920 * screenWidth, screenWidth}}
             />
           </TouchableOpacity>
-          <ImageView
-            images={locations}
-            imageIndex={imageIndex}
-            isVisible={isImageOpen}
+        <ImageView
+        images={locations}
+        imageIndex={imageIndex}
+        isVisible={isImageOpen}
             onClose={()=>this.setState({isImageOpen: false})}
-            renderFooter={()=><Text>{image.name}</Text>}
+            renderFooter={()=><Text>{image.Name}</Text>}
           />
         </View>
       )
     }
 
     // generate items for the dropdown menu
-    let pickerItems = locations.map(e => <Picker.Item key={e.id} label={e.name} value={e.name}/>)
+    let pickerItems = locations.map(e => <Picker.Item key={e.Name} label={e.Name} value={e.Name}/>)
 
     // generate university list by filtering for unis in the selected location
-    var filteredUnis = [];
+    let filteredUnis = [];
     if (universities && universities.length > 0) {
       universities.forEach(uni => {
         var filteredFacs = uni.faculties.filter(fac => {
-          var boothIds = locations.find(l => l.name == location).boothIds;
-          if (boothIds) return boothIds.indexOf(fac.id) != -1;
+          let {boothIds = []} = locations.find(l => l.Name == location) || {};
+          if (!boothIds) boothIds = []
+          return boothIds.indexOf(fac.id) != -1;
         });
         if (filteredFacs.length > 0) {
           filteredUnis.push({
@@ -143,7 +127,7 @@ export default class MapView extends Component {
         }
       })
     }
-
+    
     return (
       <Container>
         <Header>
@@ -157,7 +141,7 @@ export default class MapView extends Component {
             iosHeader="Select location"
             mode="dropdown"
             iosIcon={<Icon name="ios-arrow-down-outline" />}
-            onValueChange={id => this.changeLocation(id)}>
+            onValueChange={name => this.changeLocation(name)}>
             {pickerItems}
           </Picker>
           {imageDisplay}
@@ -176,5 +160,3 @@ export default class MapView extends Component {
     )
   }
 }
-
-const styles = StyleSheet.create({});
