@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { Container, Content, Text, Header, Body, Title, Form, Item, Input } from "native-base";
+import { Container, Content, Header, Body, Title, Form, Item, Input } from "native-base";
 
 import UniversityList from "./UniversityList";
 
@@ -84,7 +84,8 @@ export default class UniversityListContainer extends Component {
             FBmap={FBmap}
             imagesRef={imagesRef}
             openMap={l=>openMap(l)}
-            show={this.state.searchTerm != ""}
+            isSearching={this.state.searchTerm != ""}
+            adminBooths={true}
           />
         </Content>
       </Container>

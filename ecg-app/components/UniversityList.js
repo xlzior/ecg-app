@@ -1,8 +1,10 @@
 import React, { Component } from "react";
-import { View, StyleSheet } from "react-native";
-import { Text, Title, List, ListItem, Icon } from "native-base";
+import { View, StyleSheet, Dimensions } from "react-native";
+import { Text, List, ListItem, Icon } from "native-base";
 
 import BoothInfo from "./BoothInfo";
+
+const screenWidth = Dimensions.get("window").width;
 
 export default class UniversityList extends Component {
 
@@ -16,10 +18,7 @@ export default class UniversityList extends Component {
   }
 
   openModal(id) {
-    this.setState({
-      isModalShown: true,
-      id
-    })
+    this.setState({ isModalShown: true, id })
   }
 
   closeModal() {
@@ -27,8 +26,9 @@ export default class UniversityList extends Component {
   }
 
   render() {
-    let unisToDisplay = this.props.universities
-    if (this.props.filteredUnis) unisToDisplay = this.props.filteredUnis;
+    let {universities, filteredUnis, isSearching, imagesRef, show, adminBooths} = this.props;
+    let unisToDisplay = universities;
+    if (filteredUnis) unisToDisplay = filteredUnis;
 
     return (
         <View>
@@ -38,7 +38,9 @@ export default class UniversityList extends Component {
               key={university.id}
               university={university}
               openModal={(i)=>this.openModal(i)}
-              show={this.props.show}
+              isSearching={isSearching}
+              show={show}
+              adminBooths={adminBooths}
             />
           })
         }
@@ -46,7 +48,7 @@ export default class UniversityList extends Component {
             isModalShown={this.state.isModalShown}
             closeModal={s=>this.closeModal(s)}
             id={this.state.id}
-            imagesRef={this.props.imagesRef}
+            imagesRef={imagesRef}
             {...this.props}
           />
         </View>
@@ -64,10 +66,8 @@ class UniversitySection extends Component {
     this.setState({ showUni: this.props.show })
   }
 
-  static getDerivedStateFromProps(props, state) {
-    // props can only open the section but cannot close it
-    if (props.show && !state.showUni) return { showUni: true }
-    else return {}
+  static getDerivedStateFromProps(props) {
+    if (props.isSearching) return { showUni: true }
   }
 
   toggleShow() {
@@ -75,8 +75,17 @@ class UniversitySection extends Component {
   }
 
   render() {
-    let {id, name, faculties} = this.props.university;
+    let {id, name, faculties=[]} = this.props.university;
     let iconName = this.state.showUni ? "ios-arrow-down" : "ios-arrow-back";
+
+    // general uni display (for admissions booths)
+    let uniDisplay;
+    if (faculties[0] == id || this.props.adminBooths) {
+      uniDisplay = (<ListItem button onPress={()=>this.props.openModal(id)} key='unibooth'>
+        <Text>{name}</Text>
+      </ListItem>)
+      faculties = faculties.slice(1)
+    }
 
     // university section faculties
     let facultiesDisplay = faculties.map((faculty) => {
@@ -91,17 +100,17 @@ class UniversitySection extends Component {
       <List>
         <ListItem
           itemDivider
+          key='header'
           style={styles.rightIcon}
-          button onPress={()=>this.props.openModal(id)}
+          button onPress={()=>this.toggleShow()}
         >
-          <Text>{name}</Text>
+          <Text style={{maxWidth: screenWidth - 40}}>{name}</Text>
           <Icon
             name={iconName}
             style={styles.icon}
-            button onPress={()=>this.toggleShow()}
           />
         </ListItem>
-        {this.state.showUni && facultiesDisplay}
+        {this.state.showUni && [uniDisplay, facultiesDisplay]}
       </List>
     )
   }

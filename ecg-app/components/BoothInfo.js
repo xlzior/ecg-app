@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { StyleSheet, View, ScrollView, Modal, TouchableOpacity, Image, Dimensions } from "react-native";
+import { StyleSheet, View, ScrollView, Modal, Image, Dimensions } from "react-native";
 import { Button, Icon, Text, List, ListItem } from "native-base";
 import Hyperlink from "react-native-hyperlink";
 
@@ -176,13 +176,13 @@ class UniversityInfo extends Component {
 
     // links
     let linksDisplay = []
-    let links = {
+    let links = IGP ? {
       "IGP": IGP,
       "Courses": Courses,
       "Scholarships": Scholarships,
       "Admissions Requirements": Admissions,
       "'A'-Level Subject Pre-requisites": Prerequisites
-    }
+    } : null;
 
     for (let key in links) {
       if (links[key]) linksDisplay.push(
@@ -220,7 +220,7 @@ class UniversityInfo extends Component {
         {website}
         {locationDisplay}
         {linksDisplay}
-        <List>{facultiesDisplay}</List>
+        {faculties.length > 0 && <List>{facultiesDisplay}</List>}
       </ScrollView>
     )
   }
@@ -270,7 +270,7 @@ class FacultyInfo extends Component {
     )
     let uniBoothText = (boothLocation == "-" && uniBoothLocation != "-") ? (
       <Text style={styles.marginBottom}>
-        If you wish to find out more about this faculty, please visit their admissions booth located at the {uniBoothLocation}.
+        If you wish to find out more about this faculty, please visit their admissions booth located at {uniBoothLocation}.
       </Text>
     ) : null;
     let buttonLocation = boothLocation != "-" ? boothLocation : uniBoothLocation

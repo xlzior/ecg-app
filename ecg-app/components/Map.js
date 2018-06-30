@@ -33,7 +33,9 @@ export default class MapView extends Component {
       let boothIds = [];
       for (let uni in props.FBmap[locationName]) {
         if (uni.indexOf('U') !== -1) {
-          let uniSection = [uni, ...props.FBmap[locationName][uni].split(", ")]
+          let faculties = props.FBmap[locationName][uni].split(", ");
+          if (faculties[0].indexOf('U') !== -1) faculties[0] += '-A'; // admissions booths get a '-A' suffix
+          let uniSection = [uni, ...faculties]
           boothIds.push(...uniSection);
         }
       }
@@ -83,41 +85,44 @@ export default class MapView extends Component {
     let {FBmap, FBuniversity, FBfaculty, imagesRef, openMap} = this.props;
 
     // generate map
-    let image = locations.find(e => e.Name == location);
-    let imageIndex = locations.indexOf(image);
+    let locationDetails = locations.find(e => e.Name == location) || {};
+    let imageIndex = locations.indexOf(locationDetails);
     
-    if (image && image.source) { // image.source.uri might not exist if the download URL has not been fetched from firebase
+    if (locationDetails && locationDetails.source) { // image.source.uri might not exist if the download URL has not been fetched from firebase
       var imageDisplay = (
         <View>
           <TouchableOpacity onPress={()=>this.setState({isImageOpen: true})}>
             <Image
-            source={image.source}
-            style={{height: 1080 / 1920 * screenWidth, screenWidth}}
+              source={locationDetails.source}
+              style={{height: 1080 / 1920 * screenWidth, width: screenWidth}}
             />
           </TouchableOpacity>
         <ImageView
         images={locations}
         imageIndex={imageIndex}
         isVisible={isImageOpen}
-            onClose={()=>this.setState({isImageOpen: false})}
-            renderFooter={()=><Text>{image.Name}</Text>}
-          />
+        onClose={()=>this.setState({isImageOpen: false})}
+        renderFooter={()=><Text>{locationDetails.Name}</Text>}
+        />
         </View>
       )
     }
-
+    
     // generate items for the dropdown menu
     let pickerItems = locations.map(e => <Picker.Item key={e.Name} label={e.Name} value={e.Name}/>)
-
+    
     // generate university list by filtering for unis in the selected location
     let filteredUnis = [];
-    if (universities && universities.length > 0) {
+    if (universities && universities.length > 0 && 'boothIds' in locationDetails) {
+      let {boothIds = []} = locationDetails;
       universities.forEach(uni => {
         var filteredFacs = uni.faculties.filter(fac => {
-          let {boothIds = []} = locations.find(l => l.Name == location) || {};
-          if (!boothIds) boothIds = []
           return boothIds.indexOf(fac.id) != -1;
         });
+
+        if (boothIds.indexOf(uni.id+'-A') != -1) filteredFacs = [uni.id, ...filteredFacs];
+
+        // faculties which are in this location
         if (filteredFacs.length > 0) {
           filteredUnis.push({
             id: uni.id,
@@ -125,6 +130,12 @@ export default class MapView extends Component {
             faculties: filteredFacs
           })
         }
+        // else if (boothIds.indexOf(uni.id) != -1) {
+        //   filteredUnis.push({
+        //     id: uni.id,
+        //     name: uni.name
+        //   })
+        // }
       })
     }
     

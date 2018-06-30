@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { AsyncStorage, WebView, View } from "react-native";
+import { AsyncStorage, WebView, View, BackHandler } from "react-native";
 import { Header, Left, Body, Right, Title, Icon } from "native-base"
 import { Container, Content, Button, Text } from "native-base"
 
@@ -39,6 +39,17 @@ export default class Form extends Component {
               setView={(view)=>this.setView(view)}
               style={{ flex: 1 }}
               />
+  }
+
+  componentDidMount() {
+    this.backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
+      this.setView("main")
+      return true;
+    });
+  }
+
+  componentWillUnmount() {
+    this.backHandler.remove();
   }
 
   render() {

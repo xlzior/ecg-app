@@ -1,6 +1,6 @@
 import React, { Component } from "react";
-import { Platform, AsyncStorage, Linking, StyleSheet } from "react-native";
-import { Header, Left, Body, Right, Title, Icon, Container, Content, Button, Text, Card, CardItem, View } from "native-base"
+import { Platform, Linking, StyleSheet } from "react-native";
+import { Header, Body, Title, Icon, Container, Content, Button, Text, Card, CardItem, View } from "native-base"
 import Hyperlink from "react-native-hyperlink";
 import { AppInstalledChecker } from 'react-native-check-app-install';
 import Moment from "react-moment"

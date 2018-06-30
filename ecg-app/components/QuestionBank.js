@@ -36,7 +36,10 @@ export default class QuestionBank extends Component {
         // load the notes from async storage into state
         AsyncStorage.getItem("QuestionBank/Notes")
         .then(data => JSON.parse(data))
-        .then(allNotes => this.setState({ allNotes }))
+        .then(allNotes => {
+          if (!allNotes) allNotes = {}
+          this.setState({ allNotes })
+        })
         .catch(e => this.setState({ allNotes: {} }))
       }
     })
@@ -88,7 +91,8 @@ export default class QuestionBank extends Component {
   }
 
   openNotes(id, question) {
-    let notes = this.state.allNotes[id] || "";
+    
+    let notes = id in this.state.allNotes ? this.state.allNotes[id] : "";
 
     this.setState({
       selectedQn: {id, question},
@@ -106,6 +110,7 @@ export default class QuestionBank extends Component {
       catch (error) { return {} }
     })
     .then((allNotes)=> {
+      if (!allNotes) allNotes = {}
       if (notes != "") {
         allNotes[selectedQn.id] = notes;
         this.setState({
@@ -184,6 +189,7 @@ export default class QuestionBank extends Component {
         <Text>{q}</Text>
         <Icon
           name="close"
+          style={styles.icon}
           onPress={()=>this.removeQuestion(q)}
         />
       </ListItem>

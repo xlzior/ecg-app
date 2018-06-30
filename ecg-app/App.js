@@ -120,8 +120,8 @@ export default class App extends Component {
       }
     })
     .catch(e => {
-      console.error("Error retrieving last_update from AsyncStorage", e);
       this.listenForItems(this.datastoreRef);
+      console.error("Error retrieving last_update from AsyncStorage", e);
     })
   }
 
@@ -184,8 +184,8 @@ export default class App extends Component {
   }
 
   render() {
-    if (!this.state.fontLoaded) return <View style={styles.center}><Text>Loading...</Text></View>
     let {universities, mapLocation, asyncStorage, selectedTab, fontLoaded, last_update} = this.state;
+    if (!fontLoaded) return <View style={styles.center}><Text>Loading...</Text></View>
     return (
       <TabNavigator>
         <TabNavigator.Item
