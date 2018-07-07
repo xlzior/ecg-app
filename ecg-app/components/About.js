@@ -6,8 +6,6 @@ import { AppInstalledChecker } from 'react-native-check-app-install';
 import Moment from "react-moment"
 import { FontAwesome } from "@expo/vector-icons";
 
-console.disableYellowBox = true;
-
 export default class About extends Component {
 
   render() {

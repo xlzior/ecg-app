@@ -69,7 +69,7 @@ export default class MapView extends Component {
       locations[index].height = 1080;
       this.setState({locations})
     })
-    .catch(e => console.error("Error getting map URLs", e));
+    .catch(e => console.log("Error getting map URLs", e));
   }
 
   componentDidUpdate() {

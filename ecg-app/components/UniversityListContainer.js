@@ -39,11 +39,16 @@ export default class UniversityListContainer extends Component {
             }
           }
         });
+
+        // add the admissions booth if it fits the searchTerm
+        var adminBooths = uni.name.toLowerCase().indexOf(searchTerm) != -1;
+        
         if (filteredFacs.length > 0) {
           filteredUnis.push({
             id: uni.id,
             name: uni.name,
-            faculties: filteredFacs
+            faculties: filteredFacs,
+            adminBooths: adminBooths
           })
         }
       })
@@ -56,7 +61,7 @@ export default class UniversityListContainer extends Component {
   }
 
   render() {
-    var {universities, searchTerm} = this.state;
+    var {universities, searchTerm, filteredUnis} = this.state;
     var {FBuniversity, FBmap, FBfaculty, imagesRef, openMap} = this.props
     return (
       <Container>
@@ -79,13 +84,13 @@ export default class UniversityListContainer extends Component {
           </Form>
           <UniversityList
             universities={universities}
+            filteredUnis={filteredUnis}
             FBuniversity={FBuniversity}
             FBfaculty={FBfaculty}
             FBmap={FBmap}
             imagesRef={imagesRef}
             openMap={l=>openMap(l)}
             isSearching={this.state.searchTerm != ""}
-            adminBooths={true}
           />
         </Content>
       </Container>

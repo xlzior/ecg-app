@@ -26,7 +26,7 @@ export default class UniversityList extends Component {
   }
 
   render() {
-    let {universities, filteredUnis, isSearching, imagesRef, show, adminBooths} = this.props;
+    let {universities, filteredUnis, isSearching, imagesRef, show, adminBooths=false} = this.props;
     let unisToDisplay = universities;
     if (filteredUnis) unisToDisplay = filteredUnis;
 
@@ -68,6 +68,7 @@ class UniversitySection extends Component {
 
   static getDerivedStateFromProps(props) {
     if (props.isSearching) return { showUni: true }
+    else return {}
   }
 
   toggleShow() {
@@ -75,12 +76,13 @@ class UniversitySection extends Component {
   }
 
   render() {
-    let {id, name, faculties=[]} = this.props.university;
+    let {id, name, faculties=[], adminBooths} = this.props.university;
+    // university-specific adminBooths
     let iconName = this.state.showUni ? "ios-arrow-down" : "ios-arrow-back";
 
     // general uni display (for admissions booths)
     let uniDisplay;
-    if (faculties[0] == id || this.props.adminBooths) {
+    if (faculties[0] == id || this.props.adminBooths || adminBooths) {
       uniDisplay = (<ListItem button onPress={()=>this.props.openModal(id)} key='unibooth'>
         <Text>{name}</Text>
       </ListItem>)

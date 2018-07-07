@@ -104,7 +104,7 @@ class UniversityInfo extends Component {
         Image.getSize(url, (width, height) => {this.setState({width, height})});
         this.setState({Picture: url});
       })
-      .catch(e => console.error("Error retrieving download URL from Firebase", e))
+      .catch(e => console.log("Error retrieving download URL from Firebase", e))
     }
   }
 

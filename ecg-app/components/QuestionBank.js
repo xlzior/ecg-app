@@ -9,10 +9,9 @@ export default class QuestionBank extends Component {
     this.state = {
       questionBank: {},
       ownQuestions: [],
-      searchTerm: "",
+      question: "",
       notes: "",
       allNotes: {},
-      showModal: false,
       showSection: {
         "My Questions": true,
         "General": true,
@@ -28,31 +27,28 @@ export default class QuestionBank extends Component {
     .then(keys => {
       // make sure AsyncStorage contains the key "QuestionBank/Questions" and "QuestionBank/Notes"
       if (keys.indexOf("QuestionBank/Questions") == -1) {
-        AsyncStorage.setItem("QuestionBank/Questions", "")
+        AsyncStorage.setItem("QuestionBank/Questions", " ")
       }
       if (keys.indexOf("QuestionBank/Notes") == -1) {
-        AsyncStorage.setItem("QuestionBank/Notes", "")
+        AsyncStorage.setItem("QuestionBank/Notes", " ")
       } else {
         // load the notes from async storage into state
         AsyncStorage.getItem("QuestionBank/Notes")
         .then(data => JSON.parse(data))
-        .then(allNotes => {
-          if (!allNotes) allNotes = {}
-          this.setState({ allNotes })
-        })
+        .then(allNotes => this.setState({ allNotes }))
         .catch(e => this.setState({ allNotes: {} }))
       }
     })
     .then(()=>this.addNewQuestion())
-    .catch(e => console.error("Error rendering question bank", e));
+    .catch(e => console.log("Error rendering question bank", e));
   }
 
   static getDerivedStateFromProps(props) {
     return { questionBank: props.FBquestionBank };
   }
 
-  handleSearch(searchTerm) {
-    this.setState({searchTerm});
+  handleTyping(question) {
+    this.setState({question});
   }
 
   handleEditNotes(notes) {
@@ -62,36 +58,34 @@ export default class QuestionBank extends Component {
   addNewQuestion() {
     AsyncStorage.getItem("QuestionBank/Questions")
     .then((ownQuestions)=> {
-      if (!ownQuestions) ownQuestions = [];
-      else ownQuestions = ownQuestions.split("\n");
+      if (!ownQuestions) ownQuestions = ""
+      ownQuestions = ownQuestions.split("\n");
 
-      if (this.state.searchTerm != "") {
-        ownQuestions.push(this.state.searchTerm);
+      if (this.state.question != "") {
+        ownQuestions.push(this.state.question);
         AsyncStorage.setItem("QuestionBank/Questions", ownQuestions.join("\n"))
       }
       this.setState({
-        searchTerm: "",
+        question: "",
         ownQuestions
       });
     })
-    .catch(e => console.error("Error retrieving data", e));
+    .catch(e => console.log("Error retrieving data when adding question", e));
   }
 
   removeQuestion(deletedQn) {
     AsyncStorage.getItem("QuestionBank/Questions")
     .then((ownQuestions)=> {
-      if (!ownQuestions) ownQuestions = [];
-      else ownQuestions = ownQuestions.split("\n");
-
-      ownQuestions = ownQuestions.filter(q => q !== deletedQn);
+      if (!ownQuestions) ownQuestions = ""
+      ownQuestions = ownQuestions.split("\n").filter(q => q != deletedQn);
+      if (ownQuestions.length == 0) ownQuestions.push(" ")
       AsyncStorage.setItem("QuestionBank/Questions", ownQuestions.join("\n"))
       this.setState({ownQuestions});
     })
-    .catch(e => console.error("Error retrieving data", e));
+    .catch(e => console.log("Error retrieving data when removing question", e));
   }
 
   openNotes(id, question) {
-    
     let notes = id in this.state.allNotes ? this.state.allNotes[id] : "";
 
     this.setState({
@@ -110,7 +104,6 @@ export default class QuestionBank extends Component {
       catch (error) { return {} }
     })
     .then((allNotes)=> {
-      if (!allNotes) allNotes = {}
       if (notes != "") {
         allNotes[selectedQn.id] = notes;
         this.setState({
@@ -118,10 +111,10 @@ export default class QuestionBank extends Component {
           allNotes
         });
         AsyncStorage.setItem("QuestionBank/Notes", JSON.stringify(allNotes))
-        .catch(e => console.error("Error saving data", e))
+        .catch(e => console.log("Error saving data", e))
       }
     })
-    .catch(e => console.error("Error retrieving data", e));
+    .catch(e => console.log("Error retrieving data", e));
   }
 
   setRef(ref) {
@@ -137,7 +130,7 @@ export default class QuestionBank extends Component {
   handleShare() {
     var toShare = [];
     var {questionBank, ownQuestions, allNotes} = this.state;
-
+    
     // export question bank questions and notes
     for (var section in questionBank) {
       for (var qnKey in questionBank[section]) {
@@ -159,7 +152,7 @@ export default class QuestionBank extends Component {
   }
 
   render() {
-    var {questionBank, ownQuestions, searchTerm, showModal, showSection, selectedQn, notes} = this.state;
+    var {questionBank, ownQuestions, question, showSection, selectedQn, notes} = this.state;
     // generate sections from question bank
     var questionsList = Object.create(null);
     for (var section in questionBank) {
@@ -180,6 +173,7 @@ export default class QuestionBank extends Component {
       ));
     }
     // generate own questions list
+    if (ownQuestions[0] == " ") ownQuestions.shift()
     var ownQuestionsList = ownQuestions.map((q, i) => (
       <ListItem
         key={i}
@@ -237,10 +231,7 @@ export default class QuestionBank extends Component {
           </Body>
           <Right>
             <Button transparent>
-              <Icon
-                name="share"
-                onPress={()=>this.handleShare()}
-              />
+              <Icon name="share" onPress={()=>this.handleShare()} />
             </Button>
           </Right>
         </Header>
@@ -249,8 +240,8 @@ export default class QuestionBank extends Component {
             <Item>
               <Input
                 placeholder="Enter your own question"
-                onChangeText={term => this.handleSearch(term)}
-                value={searchTerm}
+                onChangeText={term => this.handleTyping(term)}
+                value={question}
                 onSubmitEditing={() => this.addNewQuestion()}
                 returnKeyType="done"
               />
@@ -271,9 +262,6 @@ export default class QuestionBank extends Component {
 }
 
 class QuestionNotes extends Component {
-  componentDidMount() {
-    if (this.props.showModal) this.popupDialog.show();
-  }
   render() {
     var {title, notes, setRef, handleEditNotes, saveNotes} = this.props;
     return (

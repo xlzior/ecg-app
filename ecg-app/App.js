@@ -38,7 +38,6 @@ export default class App extends Component {
   }
 
   listenForItems(datastoreRef) {
-    console.log("fetching from firebase...")
     datastoreRef.once("value", datastore => {
       datastore.forEach(element => {
         this.storeAsync(element.key, element.val());
@@ -71,7 +70,7 @@ export default class App extends Component {
     try {
       await AsyncStorage.setItem(key, JSON.stringify(value));
     } catch (error) {
-      console.error("Error saving data", error)
+      console.log("Error saving data", error)
     }
   }
 
@@ -98,7 +97,10 @@ export default class App extends Component {
           for (let key of keys) {
             AsyncStorage.getItem(key)
             .then(value => {
-              if (value != " ") asyncStorage[key] = JSON.parse(value);
+              if (value != " ") {
+                if (key == 'QuestionBank/Questions') asyncStorage[key] = value;
+                else asyncStorage[key] = JSON.parse(value);
+              }
 
               // if both faculty and uni are defined, flatten unis 
               let faculty = asyncStorage["Faculty"];
@@ -109,19 +111,19 @@ export default class App extends Component {
             })
             .catch(e => {
               this.listenForItems(this.datastoreRef);
-              console.error(`Error retrieving ${key} from AsyncStorage`, e);
+              console.log(`Error retrieving ${key} from AsyncStorage`, e);
             })
           }
         })
         .catch(e => {
           this.listenForItems(this.datastoreRef);
-          console.error("Error getting keys from AsyncStorage", e);
+          console.log("Error getting keys from AsyncStorage", e);
         })
       }
     })
     .catch(e => {
       this.listenForItems(this.datastoreRef);
-      console.error("Error retrieving last_update from AsyncStorage", e);
+      console.log("Error retrieving last_update from AsyncStorage", e);
     })
   }
 
