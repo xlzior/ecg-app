@@ -1,5 +1,16 @@
 {
   "expo": {
-    "sdkVersion": "26.0.0"
+    "name": "ECG Fair 2018",
+    "description": "App for Hwa Chong Institution's Education and Career Guidance Fair 2018.",
+    "icon": "ecg-app-2018.png",
+    "version": "1.0.0",
+    "slug": "ecg-app",
+    "sdkVersion": "26.0.0",
+    "ios": {
+      "bundleIdentifier": "com.hci.ecgapp2018"
+    },
+    "android": {
+      "package": "com.hci.ecgapp2018"
+    }
   }
 }
