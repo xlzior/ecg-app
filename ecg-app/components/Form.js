@@ -9,6 +9,21 @@ const titles = {
   university: "University"
 }
 
+const jsCode = `
+  function whenRNPostMessageReady(cb) {
+      if (postMessage.length === 1) cb();
+      else setTimeout(function() { whenRNPostMessageReady(cb) }, 1000);
+  }
+
+  var href = window.location.href;
+
+  if (~ href.indexOf("formResponse")) {
+    whenRNPostMessageReady(function() {
+      postMessage(document.getElementsByTagName("a")[0].href);
+    });
+  }
+`;
+
 export default class Form extends Component {
 
   constructor() {
@@ -58,10 +73,9 @@ export default class Form extends Component {
         <Header>
         {this.state.view !== "main" &&
           <Left>
-            <Button transparent>
+            <Button transparent onPress={()=>this.setView("main")}>
               <Icon
                 name="arrow-back"
-                onPress={()=>this.setView("main")}
               />
             </Button>
           </Left>
@@ -114,20 +128,6 @@ class Student extends Component {
   }
 
   render() {
-    const jsCode = `
-      function whenRNPostMessageReady(cb) {
-          if (postMessage.length === 1) cb();
-          else setTimeout(function() { whenRNPostMessageReady(cb) }, 1000);
-      }
-
-      var href = window.location.href;
-
-      if (~ href.indexOf("formResponse")) {
-        whenRNPostMessageReady(function() {
-          postMessage(document.getElementsByTagName("a")[0].href);
-        });
-      }
-    `;
     return (
       <View style={{ flex: 1 }}>
         <WebView
@@ -162,20 +162,6 @@ class University extends Component {
   }
 
   render() {
-    const jsCode = `
-      function whenRNPostMessageReady(cb) {
-          if (postMessage.length === 1) cb();
-          else setTimeout(function() { whenRNPostMessageReady(cb) }, 1000);
-      }
-
-      var href = window.location.href;
-
-      if (~ href.indexOf("formResponse")) {
-        whenRNPostMessageReady(function() {
-          postMessage(document.getElementsByTagName("a")[0].href);
-        });
-      }
-    `;
     return (
       <View style={{ flex: 1 }}>
         <WebView
