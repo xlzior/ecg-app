@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { AsyncStorage, WebView, View, BackHandler } from "react-native";
+import { AsyncStorage, WebView, View, BackHandler, StyleSheet } from "react-native";
 import { Header, Left, Body, Right, Title, Icon } from "native-base"
 import { Container, Content, Button, Text } from "native-base"
 
@@ -96,10 +96,10 @@ class Main extends Component {
   render() {
     return (
       <Content>
-        <Button info block large onPress={()=>this.props.setView("student")}>
+        <Button info block large style={styles.button} onPress={()=>this.props.setView("student")}>
           <Text>Student Form</Text>
         </Button>
-        <Button info block large onPress={()=>this.props.setView("university")}>
+        <Button info block large style={styles.button} onPress={()=>this.props.setView("university")}>
           <Text>University Form</Text>
         </Button>
       </Content>
@@ -174,3 +174,10 @@ class University extends Component {
     )
   }
 }
+
+const styles = StyleSheet.create({
+  button: {
+    margin: 10,
+    marginBottom: 0
+  }
+});

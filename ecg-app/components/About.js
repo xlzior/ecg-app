@@ -202,6 +202,9 @@ class UpdateButton extends Component {
         <Text style={styles.margins}>
           Last updated: <Moment element={Text} fromNow>{this.state.last_update}</Moment>
         </Text>
+        <Text style={styles.margins}>
+          This app was created by students from the Hwa Chong Infocomm and Robotics Society in conjunction with the Education and Career Guidance Unit.
+        </Text>
       </View>
     )
   }

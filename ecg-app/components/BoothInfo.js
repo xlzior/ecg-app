@@ -65,11 +65,11 @@ export default class BoothInfo extends Component {
 
     let closeButton = (
       <Button
-        small transparent dark
+        transparent dark
         onPress={()=>closeModal()}
         style={styles.closeButton}
       >
-        <Icon name="close"/>
+        <Icon name="close" style={{fontSize: 35}}/>
       </Button>
     )
     

@@ -11,6 +11,10 @@
     },
     "android": {
       "package": "com.hci.ecgapp2018"
+    },
+    "splash": {
+      "backgroundColor": "#DBDBDB",
+      "image": "Splash.png"
     }
   }
 }

@@ -88,8 +88,9 @@ export default class MapView extends Component {
     let locationDetails = locations.find(e => e.Name == location) || {};
     let imageIndex = locations.indexOf(locationDetails);
     
+    var imageDisplay = <View style={{height: 1080 / 1920 * screenWidth, width: screenWidth}}></View>
     if (locationDetails && locationDetails.source) { // image.source.uri might not exist if the download URL has not been fetched from firebase
-      var imageDisplay = (
+      imageDisplay = (
         <View>
           <TouchableOpacity onPress={()=>this.setState({isImageOpen: true})}>
             <Image
@@ -98,12 +99,12 @@ export default class MapView extends Component {
             />
           </TouchableOpacity>
         <ImageView
-        images={locations}
-        imageIndex={imageIndex}
-        isVisible={isImageOpen}
-        onClose={()=>this.setState({isImageOpen: false})}
-        renderFooter={()=><Text>{locationDetails.Name}</Text>}
-        />
+          images={locations}
+          imageIndex={imageIndex}
+          isVisible={isImageOpen}
+          onClose={()=>this.setState({isImageOpen: false})}
+          renderFooter={()=><Text>{locationDetails.Name}</Text>}
+          />
         </View>
       )
     }
