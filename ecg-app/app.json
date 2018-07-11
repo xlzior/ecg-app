@@ -10,7 +10,9 @@
       "bundleIdentifier": "com.hci.ecgapp2018"
     },
     "android": {
-      "package": "com.hci.ecgapp2018"
+      "package": "com.hci.ecgapp2018",
+      "permissions": [],
+      "versionCode": 3
     },
     "splash": {
       "backgroundColor": "#DBDBDB",
