@@ -86,6 +86,9 @@ class UniversitySection extends Component {
       uniDisplay = (<ListItem button onPress={()=>this.props.openModal(id)} key='unibooth'>
         <Text>{name}</Text>
       </ListItem>)
+    }
+    if (faculties[0] == id) {
+      // if the first 'faculty' is the admissions booth, remove it from the array since it is already displayed
       faculties = faculties.slice(1)
     }
 

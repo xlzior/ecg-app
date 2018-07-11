@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { StyleSheet, AsyncStorage, Share, Platform } from "react-native";
+import { StyleSheet, AsyncStorage, Share, Platform, Keyboard } from "react-native";
 import { Container, Content, Text, Header, Body, Title, List, ListItem, Form, Item, Input, Icon, Button, Left, Right } from "native-base";
 import PopupDialog, { DialogTitle } from 'react-native-popup-dialog';
 
@@ -269,7 +269,10 @@ class QuestionNotes extends Component {
         ref={setRef}
         dialogTitle={<DialogTitle title={title} />}
         height={0.7}
-        onDismissed={()=>saveNotes()}
+        onDismissed={()=>{
+          saveNotes();
+          Keyboard.dismiss();
+        }}
       >
         <Content>
           <Input

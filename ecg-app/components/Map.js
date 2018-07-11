@@ -15,6 +15,7 @@ export default class MapView extends Component {
       location: "Hall",
       isImageOpen: false,
       universities: [],
+      urlsFetched: false
     }
   }
 
@@ -44,6 +45,7 @@ export default class MapView extends Component {
     }
     let state = {
       universities: props.universities,
+      urlsFetched: false,
       locations
     };
     if (props.location) state.location = props.location;
@@ -57,26 +59,30 @@ export default class MapView extends Component {
   getURL(location, index) {
     // get image download URLs from firebase and store inside location
     let imageRef = this.props.imagesRef.child(location.FileName);
-    let locations = this.state.locations.slice();
 
     imageRef.getDownloadURL()
     .then(url => {
+      let locations = this.state.locations.slice();
       locations[index].source = {
         uri: url,
         cache: "force-cache"
       };
       locations[index].width = 1920;
       locations[index].height = 1080;
+
       this.setState({locations})
     })
     .catch(e => console.log("Error getting map URLs", e));
   }
 
   componentDidUpdate() {
-    let {locations} = this.state;
+    let {locations, urlsFetched} = this.state;
+    console.log(this.state.locations[0]);
+    console.log(this.state.urlsFetched)
     // fetch image download URLs only if locations have been loaded but the images have not been downloaded
-    if (locations.length > 0 && !locations[0].source) {
+    if (locations.length > 0 && !urlsFetched) {
       locations.forEach((location, index) => this.getURL(location, index))
+      this.setState({urlsFetched: true})
     }
   }
 

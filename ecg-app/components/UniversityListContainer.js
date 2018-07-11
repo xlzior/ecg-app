@@ -50,6 +50,14 @@ export default class UniversityListContainer extends Component {
             faculties: filteredFacs,
             adminBooths: adminBooths
           })
+        } else if (adminBooths) {
+          // in the case where the faculties don't match but the uni does
+          filteredUnis.push({
+            id: uni.id,
+            name: uni.name,
+            faculties: [],
+            adminBooths: adminBooths
+          })
         }
       })
     }
@@ -91,6 +99,7 @@ export default class UniversityListContainer extends Component {
             imagesRef={imagesRef}
             openMap={l=>openMap(l)}
             isSearching={this.state.searchTerm != ""}
+            adminBooths={this.state.searchTerm == ""}
           />
         </Content>
       </Container>
