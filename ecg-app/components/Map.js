@@ -77,8 +77,6 @@ export default class MapView extends Component {
 
   componentDidUpdate() {
     let {locations, urlsFetched} = this.state;
-    console.log(this.state.locations[0]);
-    console.log(this.state.urlsFetched)
     // fetch image download URLs only if locations have been loaded but the images have not been downloaded
     if (locations.length > 0 && !urlsFetched) {
       locations.forEach((location, index) => this.getURL(location, index))

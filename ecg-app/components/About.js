@@ -18,10 +18,7 @@ export default class About extends Component {
           </Body>
         </Header>
         <Content>
-          <FAQ
-            setView={(view) => this.setView(view)}
-            {...this.props}
-          />
+          <FAQ {...this.props}/>
           <UpdateButton
             last_update={this.props.last_update}
             pullData={()=>this.props.pullData()}

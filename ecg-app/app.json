@@ -15,6 +15,9 @@
       "permissions": [],
       "versionCode": 3
     },
+    "androidStatusBar": {
+      "barStyle": "dark-content"
+    },
     "splash": {
       "backgroundColor": "#DBDBDB",
       "image": "Splash.png"

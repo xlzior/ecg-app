@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { StyleSheet, Text, View, AsyncStorage } from "react-native";
+import { StyleSheet, Text, View, AsyncStorage, ImageBackground, StatusBar, Platform } from "react-native";
 
 // TabNavigator
 import TabNavigator from "react-native-tab-navigator";
@@ -77,7 +77,6 @@ export default class App extends Component {
   fetchAsync() {
     return AsyncStorage.getItem("last_update")
     .then(last_update => {
-      console.log('last_update: ', last_update);
       this.setState({last_update})
       
       let outdated = new Date();
@@ -87,7 +86,6 @@ export default class App extends Component {
       // update database only if last update was more than 4 days ago
       if (last_update == null || last_update < outdated) this.listenForItems(this.datastoreRef);
       else {
-        console.log("retrieving from AsyncStorage...")
         // if the async storage is still up to date, retrieve data and set it to state
         let asyncStorage = this.state.asyncStorage;
         let universities;
@@ -188,7 +186,9 @@ export default class App extends Component {
   render() {
     let {universities, mapLocation, asyncStorage, selectedTab, fontLoaded, last_update} = this.state;
     if (!fontLoaded) return <View style={styles.center}><Text>Loading...</Text></View>
+
     return (
+      <ImageBackground source={require('./Background.png')} style={{width: '100%', height: '100%'}}>
       <TabNavigator>
         <TabNavigator.Item
           selected={selectedTab === "map"}
@@ -257,6 +257,7 @@ export default class App extends Component {
           />
         </TabNavigator.Item>
       </TabNavigator>
+      </ImageBackground>
     );
   }
 }
