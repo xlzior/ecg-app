@@ -8,7 +8,7 @@
     "sdkVersion": "26.0.0",
     "ios": {
       "bundleIdentifier": "com.hci.ecgapp2018",
-      "buildNumber": "2"
+      "buildNumber": "3"
     },
     "android": {
       "package": "com.hci.ecgapp2018",
