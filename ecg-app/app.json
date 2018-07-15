@@ -19,7 +19,7 @@
       "barStyle": "dark-content"
     },
     "splash": {
-      "backgroundColor": "#DBDBDB",
+      "backgroundColor": "#EEEEEE",
       "image": "Splash.png"
     }
   }
