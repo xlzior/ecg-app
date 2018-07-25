@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { Platform, Linking, StyleSheet } from "react-native";
+import { Platform, Linking, StyleSheet, AsyncStorage } from "react-native";
 import { Header, Body, Title, Icon, Container, Content, Button, Text, Card, CardItem, View } from "native-base"
 import Hyperlink from "react-native-hyperlink";
 import { AppInstalledChecker } from 'react-native-check-app-install';
@@ -189,16 +189,26 @@ class UpdateButton extends Component {
   render() {
     return (
       <View style={styles.lastItem}>
-        <Text style={styles.margins}>App glitching or data outdated? Click to download the data again.</Text>
+        <Text style={styles.margins}>App glitching or data outdated?</Text>
+        <Text style={styles.margins}>Download the data again:</Text>
         <Button block info onPress={()=>this.props.pullData()}
           style={styles.margins}
         >
           <FontAwesome name="download" color="white" size={20}/>
-          <Text>Refresh</Text>
+          <Text>Download data</Text>
         </Button>
         <Text style={styles.margins}>
           Last updated: <Moment element={Text} fromNow>{this.state.last_update}</Moment>
         </Text>
+
+        <Text style={styles.margins}>Or clear storage (please save your questions elsewhere first!): </Text>
+        <Button block info onPress={()=>AsyncStorage.multiRemove(["QuestionBank/Notes","FAQ","QuestionBank","Faculty","University","last_update","Map","QuestionBank/Questions"])}
+          style={styles.margins}
+        >
+          <FontAwesome name="refresh" color="white" size={20}/>
+          <Text>Clear storage</Text>
+        </Button>
+
         <Text style={styles.margins}>
           This app was created by students from the Hwa Chong Infocomm and Robotics Society in conjunction with the Education and Career Guidance Unit.
         </Text>

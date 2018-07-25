@@ -1,7 +1,9 @@
 import React, { Component } from "react";
-import { StyleSheet, AsyncStorage, Share, Platform, Keyboard } from "react-native";
+import { StyleSheet, AsyncStorage, Share, Platform, Keyboard, Dimensions } from "react-native";
 import { Container, Content, Text, Header, Body, Title, List, ListItem, Form, Item, Input, Icon, Button, Left, Right } from "native-base";
 import PopupDialog, { DialogTitle } from 'react-native-popup-dialog';
+
+const screenHeight = Dimensions.get("window").height;
 
 export default class QuestionBank extends Component {
   constructor(props) {
@@ -27,15 +29,18 @@ export default class QuestionBank extends Component {
     .then(keys => {
       // make sure AsyncStorage contains the key "QuestionBank/Questions" and "QuestionBank/Notes"
       if (keys.indexOf("QuestionBank/Questions") == -1) {
-        AsyncStorage.setItem("QuestionBank/Questions", " ")
+        AsyncStorage.setItem("QuestionBank/Questions", "[]")
       }
       if (keys.indexOf("QuestionBank/Notes") == -1) {
-        AsyncStorage.setItem("QuestionBank/Notes", " ")
+        AsyncStorage.setItem("QuestionBank/Notes", "{}")
       } else {
         // load the notes from async storage into state
         AsyncStorage.getItem("QuestionBank/Notes")
         .then(data => JSON.parse(data))
-        .then(allNotes => this.setState({ allNotes }))
+        .then(allNotes => {
+          if (!allNotes) allNotes = {}
+          this.setState({ allNotes })
+        })
         .catch(e => this.setState({ allNotes: {} }))
       }
     })
@@ -58,12 +63,16 @@ export default class QuestionBank extends Component {
   addNewQuestion() {
     AsyncStorage.getItem("QuestionBank/Questions")
     .then((ownQuestions)=> {
-      if (!ownQuestions) ownQuestions = ""
-      ownQuestions = ownQuestions.split("\n");
+      if (!ownQuestions) ownQuestions = "[]"
+      ownQuestions = JSON.parse(ownQuestions)
 
       if (this.state.question != "") {
-        ownQuestions.push(this.state.question);
-        AsyncStorage.setItem("QuestionBank/Questions", ownQuestions.join("\n"))
+        let id = (new Date()).getTime()
+        ownQuestions.push({
+          id,
+          question: this.state.question
+        })
+        AsyncStorage.setItem("QuestionBank/Questions", JSON.stringify(ownQuestions))
       }
       this.setState({
         question: "",
@@ -73,13 +82,12 @@ export default class QuestionBank extends Component {
     .catch(e => console.log("Error retrieving data when adding question", e));
   }
 
-  removeQuestion(deletedQn) {
+  removeQuestion(deletedQnId) {
     AsyncStorage.getItem("QuestionBank/Questions")
     .then((ownQuestions)=> {
-      if (!ownQuestions) ownQuestions = ""
-      ownQuestions = ownQuestions.split("\n").filter(q => q != deletedQn);
-      if (ownQuestions.length == 0) ownQuestions.push(" ")
-      AsyncStorage.setItem("QuestionBank/Questions", ownQuestions.join("\n"))
+      ownQuestions = JSON.parse(ownQuestions)
+      ownQuestions = ownQuestions.filter(({id}) => id != deletedQnId)
+      AsyncStorage.setItem("QuestionBank/Questions", JSON.stringify(ownQuestions))
       this.setState({ownQuestions});
     })
     .catch(e => console.log("Error retrieving data when removing question", e));
@@ -104,6 +112,7 @@ export default class QuestionBank extends Component {
       catch (error) { return {} }
     })
     .then((allNotes)=> {
+      if (!allNotes) allNotes = {}
       if (notes != "") {
         allNotes[selectedQn.id] = notes;
         this.setState({
@@ -140,9 +149,9 @@ export default class QuestionBank extends Component {
     }
 
     // export own questions and notes
-    ownQuestions.forEach((q, i) => {
-      toShare.push("\n"+q+"\n");
-      if (allNotes[i]) toShare.push(allNotes[i]+"\n")
+    ownQuestions.forEach(({id, question}) => {
+      toShare.push("\n"+question+"\n");
+      if (allNotes[id]) toShare.push(allNotes[id]+"\n")
     })
 
     Share.share({
@@ -173,18 +182,17 @@ export default class QuestionBank extends Component {
       ));
     }
     // generate own questions list
-    if (ownQuestions[0] == " ") ownQuestions.shift()
-    var ownQuestionsList = ownQuestions.map((q, i) => (
+    var ownQuestionsList = ownQuestions.map(({id, question}) => (
       <ListItem
-        key={i}
+        key={id}
         style={styles.rightIcon}
-        button onPress={()=>this.openNotes(i, q)}
+        button onPress={()=>this.openNotes(id, question)}
       >
-        <Text>{q}</Text>
+        <Text>{question}</Text>
         <Icon
           name="close"
           style={styles.icon}
-          onPress={()=>this.removeQuestion(q)}
+          onPress={()=>this.removeQuestion(id)}
         />
       </ListItem>
     ));
@@ -277,6 +285,7 @@ class QuestionNotes extends Component {
         <Content>
           <Input
             placeholder="Write notes here"
+            style={{height: screenHeight*0.55, textAlignVertical: "top"}}
             multiline
             onChangeText={notes=>handleEditNotes(notes)}
             value={notes}
